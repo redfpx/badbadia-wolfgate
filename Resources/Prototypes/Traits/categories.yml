@@ -15,4 +15,4 @@
 - type: traitCategory
   id: Physical
   name: trait-category-physical
-  maxTraitPoints: 6
+  maxTraitPoints: 50
