@@ -8,9 +8,9 @@ public sealed class WFCompanyCVars
 {
     /// <summary>Hours a player must have played in total before they can create a company.</summary>
     public static readonly CVarDef<int> CreateHours =
-        CVarDef.Create("wf.companies.create_hours", 25, CVar.SERVERONLY);
+        CVarDef.Create("wf.companies.create_hours", 1, CVar.SERVERONLY);
 
     /// <summary>Thalers taken from the founder's bank to create a company; the fee leaves the economy.</summary>
     public static readonly CVarDef<int> CreateFee =
-        CVarDef.Create("wf.companies.create_fee", 100_000, CVar.SERVERONLY);
+        CVarDef.Create("wf.companies.create_fee", 69, CVar.SERVERONLY);
 }
