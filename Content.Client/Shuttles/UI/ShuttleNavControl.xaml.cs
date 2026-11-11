@@ -90,6 +90,11 @@ public partial class ShuttleNavControl : BaseShuttleControl // Mono
     #region Mono
     // These 2 handle timing updates
     protected const float RadarUpdateInterval = 0f;
+    // WOLFGATE(Performance) START: the sweep divided by the zero interval, so the sweep hand keeps a period of its own.
+    // The request gate stays open; the throttle in RadarBlipsSystem owns the refresh rate.
+    protected const float RadarSweepPeriod = 1f;
+    private float _wfSweep; // WOLFGATE(Performance): the sweep hand's own timer, since the request accumulator is zeroed each frame
+    // WOLFGATE END
     protected float _updateAccumulator = 0f;
 
     // doesn't support absolute panning and angle follow, but why would you need that?
@@ -518,6 +523,11 @@ public partial class ShuttleNavControl : BaseShuttleControl // Mono
     protected override void FrameUpdate(FrameEventArgs args)
     {
         base.FrameUpdate(args);
+        // WOLFGATE(Performance) START: the sweep hand turns on its own timer, so it keeps moving while requests are throttled
+        _wfSweep += args.DeltaSeconds;
+        if (_wfSweep >= RadarSweepPeriod)
+            _wfSweep -= RadarSweepPeriod;
+        // WOLFGATE END
         WfSaveDisplaySettings(); // WOLFGATE(Shuttles): keep a changed radar display choice for the next radar.
         WfUpdateWaypoints(); // WOLFGATE(Waypoints): keep the panel on the grid's current list.
 
@@ -678,6 +688,8 @@ public partial class ShuttleNavControl : BaseShuttleControl // Mono
         DrawWolfgateShields(handle, xform, worldToView); // WOLFGATE(ShipShields): hull contours and directional coverage on all radar views.
         DrawCrewGroups(handle, xform, worldToView); // WOLFGATE(NpcCrew): Admin tags and battlegroup lines for NPC-crewed ships.
         DrawEncounterMarkers(handle, xform, worldToView); // WOLFGATE(Encounters): Sector markers for visible encounters.
+        DrawWfLatticePhantoms(handle, worldToView, xform.MapUid); // WOLFGATE(Lattice): radar contacts only this player sees.
+        DrawWfLatticeHex(handle, worldToView, xform.MapUid); // WOLFGATE(Lattice): the hex field's beams and the anchors' wards.
         DrawWfWaypoints(handle, worldToView, xform.MapUid); // WOLFGATE(Waypoints): the crew's marked positions.
 
         // Frontier Corvax: north line drawing
@@ -731,7 +743,10 @@ public partial class ShuttleNavControl : BaseShuttleControl // Mono
         #region Mono
         // Draw radar line
         // First, figure out which angle to draw.
-        var updateRatio = _updateAccumulator / RadarUpdateInterval;
+        // WOLFGATE(Performance) START: this divided by a zero interval and drew the sweep to a NaN point every frame
+        // var updateRatio = _updateAccumulator / RadarUpdateInterval;
+        var updateRatio = _wfSweep / RadarSweepPeriod;
+        // WOLFGATE END
 
         Angle angle = updateRatio * Math.Tau;
         var origin = ScalePosition(-new Vector2(Offset.X, -Offset.Y));
@@ -816,6 +831,7 @@ public partial class ShuttleNavControl : BaseShuttleControl // Mono
             }
         }
         #endregion
+        DrawWfLatticeDeadZones(handle, worldToView, xform.MapUid); // WOLFGATE(Lattice): the Coda shows only as static on every scanner.
         DrawWfCoordinateReadout(handle); // WOLFGATE(Waypoints): cursor and scanner coordinates over everything else.
     }
 
@@ -902,6 +918,7 @@ public partial class ShuttleNavControl : BaseShuttleControl // Mono
                         Loc.GetString($"shuttle-console-signature-infrared")
                         : _detection.HandleUnknownMassLabel(grid.Owner)
                     : _shuttles.GetIFFLabel(grid, self: false, component: iff);
+                labelName = WfLatticeGarble(labelName, gUid); // WOLFGATE(Lattice): contact names garble out past the Lattice's hold.
 
                 var shouldDrawIFF = ShowIFF && labelName != null;
                 var shouldDrawDetailedIFF = ShowIFFDetailed && shouldDrawIFF; // Mono

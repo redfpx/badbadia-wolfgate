@@ -377,6 +377,11 @@
   components:
   - type: VendingMachine
     pack: ClothesMateInventory
+    # WOLFGATE(Gags) START: allow recolouring clothes before purchase
+    canRecolor: true
+    # WOLFGATE END
+    # WOLFGATE(Gags): allow purchased clothing to be returned
+    canReturnItems: true
     offState: off
     brokenState: broken
     normalState: normal-unshaded
@@ -1224,6 +1229,11 @@
   components:
   - type: VendingMachine
     pack: AutoDrobeInventory
+    # WOLFGATE(Gags) START: allow recolouring costumes before purchase
+    canRecolor: true
+    # WOLFGATE END
+    # WOLFGATE(Gags): allow purchased costumes to be returned
+    canReturnItems: true
     offState: off
     brokenState: broken
     normalState: normal-unshaded
@@ -2253,4 +2263,3 @@
     ejectDelay: 0.6 #Mono
   - type: AccessReader
     access: [["SyndicateAgent"]]
-

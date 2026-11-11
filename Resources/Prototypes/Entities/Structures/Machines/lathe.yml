@@ -161,6 +161,7 @@
     staticPacks:
     - ToolsStatic
     - WFPlanetStatic # WOLFGATE(Planets): landing thruster kits and parachutes.
+    - WFPhotographyStatic # WOLFGATE(Photography): cameras and film.
     - PartsStatic
     - AtmosStatic
     - CablesStatic
@@ -179,6 +180,7 @@
     - ReportingStatic # DeltaV
     - WFTetherStatic # WOLFGATE(Tether)
     - WFRemadeStatic # WOLFGATE(Remade): the plasma cutter and the monolith tap flatpack
+    - WFLatticeStatic # WOLFGATE(Lattice): Drift stabiliser, anchor charm and relay anchor recipes
   - type: EmagLatheRecipes
     emagStaticPacks:
     - StaticAmmoRecipePack

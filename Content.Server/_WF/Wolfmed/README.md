@@ -169,6 +169,7 @@ Skipped ("dirty-disposed").
 - [`Content.Shared/_WF/Wolfmed/Autodoc/WolfmedAutodocAtmosphereComponent.cs`](../../../Content.Shared/_WF/Wolfmed/Autodoc/WolfmedAutodocAtmosphereComponent.cs)
 - [`Content.Shared/_WF/Wolfmed/Autodoc/WolfmedAutodocBloodComponent.cs`](../../../Content.Shared/_WF/Wolfmed/Autodoc/WolfmedAutodocBloodComponent.cs)
 - [`Content.Shared/_WF/Wolfmed/Autodoc/WolfmedAutodocOccupantComponent.cs`](../../../Content.Shared/_WF/Wolfmed/Autodoc/WolfmedAutodocOccupantComponent.cs)
+- [`Content.Shared/_WF/Wolfmed/Body/WFKidneysComponent.cs`](../../../Content.Shared/_WF/Wolfmed/Body/WFKidneysComponent.cs)
 - [`Content.Shared/_WF/Wolfmed/Body/WolfmedBodyPartComponent.cs`](../../../Content.Shared/_WF/Wolfmed/Body/WolfmedBodyPartComponent.cs)
 - [`Content.Shared/_WF/Wolfmed/Body/WolfmedBodyPartSystem.cs`](../../../Content.Shared/_WF/Wolfmed/Body/WolfmedBodyPartSystem.cs)
 - [`Content.Shared/_WF/Wolfmed/Body/WolfmedOrganComponent.cs`](../../../Content.Shared/_WF/Wolfmed/Body/WolfmedOrganComponent.cs)
@@ -373,6 +374,7 @@ Skipped ("dirty-disposed").
 - [`Content.IntegrationTests/Tests/_WF/Wolfmed/Scenarios/WolfmedPlaytestThreeTest.cs`](../../../Content.IntegrationTests/Tests/_WF/Wolfmed/Scenarios/WolfmedPlaytestThreeTest.cs)
 - [`Content.IntegrationTests/Tests/_WF/Wolfmed/Scenarios/WolfmedPlaytestTwoTest.cs`](../../../Content.IntegrationTests/Tests/_WF/Wolfmed/Scenarios/WolfmedPlaytestTwoTest.cs)
 - [`Content.IntegrationTests/Tests/_WF/Wolfmed/Scenarios/WolfmedPodWeldsChassisTest.cs`](../../../Content.IntegrationTests/Tests/_WF/Wolfmed/Scenarios/WolfmedPodWeldsChassisTest.cs)
+- [`Content.IntegrationTests/Tests/_WF/Wolfmed/Scenarios/WolfmedRadiationHelmTest.cs`](../../../Content.IntegrationTests/Tests/_WF/Wolfmed/Scenarios/WolfmedRadiationHelmTest.cs)
 - [`Content.IntegrationTests/Tests/_WF/Wolfmed/Scenarios/WolfmedRemainingCausesTest.cs`](../../../Content.IntegrationTests/Tests/_WF/Wolfmed/Scenarios/WolfmedRemainingCausesTest.cs)
 - [`Content.IntegrationTests/Tests/_WF/Wolfmed/Scenarios/WolfmedRevivalStopwatchTest.cs`](../../../Content.IntegrationTests/Tests/_WF/Wolfmed/Scenarios/WolfmedRevivalStopwatchTest.cs)
 - [`Content.IntegrationTests/Tests/_WF/Wolfmed/Scenarios/WolfmedRevivalTest.cs`](../../../Content.IntegrationTests/Tests/_WF/Wolfmed/Scenarios/WolfmedRevivalTest.cs)
@@ -554,6 +556,7 @@ Skipped ("dirty-disposed").
 - [`Resources/Prototypes/_WF/Wolfmed/Surgery/slime_core.yml`](../../../Resources/Prototypes/_WF/Wolfmed/Surgery/slime_core.yml)
 - [`Resources/Prototypes/_WF/Wolfmed/Surgery/surgeries.yml`](../../../Resources/Prototypes/_WF/Wolfmed/Surgery/surgeries.yml)
 - [`Resources/Prototypes/_WF/Wolfmed/Surgery/surgery_steps.yml`](../../../Resources/Prototypes/_WF/Wolfmed/Surgery/surgery_steps.yml)
+- [`Resources/Prototypes/_WF/Wolfmed/Surgery/synth_components.yml`](../../../Resources/Prototypes/_WF/Wolfmed/Surgery/synth_components.yml)
 - [`Resources/Prototypes/_WF/Wolfmed/Surgery/synth_core.yml`](../../../Resources/Prototypes/_WF/Wolfmed/Surgery/synth_core.yml)
 - [`Resources/Prototypes/_WF/Wolfmed/Surgery/synth_power_cell.yml`](../../../Resources/Prototypes/_WF/Wolfmed/Surgery/synth_power_cell.yml)
 - [`Resources/Prototypes/_WF/Wolfmed/Voice/bobmed_emote_sounds.yml`](../../../Resources/Prototypes/_WF/Wolfmed/Voice/bobmed_emote_sounds.yml)
@@ -1263,6 +1266,7 @@ Skipped ("dirty-disposed").
   - HOOK 7 / D14, Wolfmed wound treatment data.
 - [`Content.Server/Medical/DefibrillatorSystem.cs`](../../Medical/DefibrillatorSystem.cs)
   - BRAIN
+  - a living Wolfmed patient in arrest can be shocked; Unrevivable only stops the dead
   - BRAIN, the Wolfmed rule replaces the threshold gate for a wound host.
   - M1a: the refusal carries the patient's numbers (blood %, units to transfuse).
   - M1a
@@ -1572,6 +1576,7 @@ Skipped ("dirty-disposed").
   - AUTODOC4: HOOK 26, a wound host's tend step runs until the part's wounds are closed.
 - [`Content.Shared/_Shitmed/Surgery/Tools/SurgeryToolConditionsSystem.cs`](../../../Content.Shared/_Shitmed/Surgery/Tools/SurgeryToolConditionsSystem.cs): the take-ammo event was never raised, so every gun read as empty
 - [`Content.Shared/_Shitmed/Targeting/SharedTargetingSystem.cs`](../../../Content.Shared/_Shitmed/Targeting/SharedTargetingSystem.cs): Wolfmed snapshot/targeting needs a single-bit check; copied from Onyx's SharedTargetingSystem.
+- [`Content.Shared/_White/Standing/SharedLayingDownSystem.cs`](../../../Content.Shared/_White/Standing/SharedLayingDownSystem.cs): surgery needs the patient down, and a ship that lost gravity still has casualties
 - [`Content.Shared/Armor/SharedArmorSystem.cs`](../../../Content.Shared/Armor/SharedArmorSystem.cs): HOOK 10
 - [`Content.Shared/Bed/Sleep/SleepingSystem.cs`](../../../Content.Shared/Bed/Sleep/SleepingSystem.cs): playtest 5, a body that died asleep stayed stunned and knocked down once revived.
 - [`Content.Shared/Body/Part/BodyPartComponent.cs`](../../../Content.Shared/Body/Part/BodyPartComponent.cs): HOOK 21 - P3-4 Option B needs AfterAutoHandleStateEvent on detached parts.

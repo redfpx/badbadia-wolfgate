@@ -169,6 +169,8 @@ predicted on their own client; this only cuts the audio entities other players r
   - predicted copies move on the tick they're fired, like the server's
   - also draws the beams this client predicts locally
   - keeps the Mono multi-shot offset in step with the server
+  - no requests with the trigger up; the server finishes a started burst itself.
+  - a burst still runs out
   - one slot per fired projectile, holding its predicted copy's id
   - this client already drew this shot's beams
   - recoil and predicted copies
@@ -243,5 +245,8 @@ predicted on their own client; this only cuts the audio entities other players r
 - [`Resources/Prototypes/Entities/Structures/Windows/plastitanium.yml`](../../../Resources/Prototypes/Entities/Structures/Windows/plastitanium.yml): material bullet impacts
 - [`Resources/Prototypes/Entities/Structures/Windows/window.yml`](../../../Resources/Prototypes/Entities/Structures/Windows/window.yml): material bullet impacts
 - [`Resources/Prototypes/SoundCollections/gun_impacts.yml`](../../../Resources/Prototypes/SoundCollections/gun_impacts.yml): Skyrat metal impacts
+- [`Resources/ServerInfo/_Mono/Guidebook/Specifications/ballistics.xml`](../../../Resources/ServerInfo/_Mono/Guidebook/Specifications/ballistics.xml): ship gunnery specs brought in line with the current weapons
+- [`Resources/ServerInfo/_Mono/Guidebook/Specifications/energy.xml`](../../../Resources/ServerInfo/_Mono/Guidebook/Specifications/energy.xml): ship gunnery specs brought in line with the current weapons
+- [`Resources/ServerInfo/_Mono/Guidebook/Specifications/missiles.xml`](../../../Resources/ServerInfo/_Mono/Guidebook/Specifications/missiles.xml): ship gunnery specs brought in line with the current weapons
 
 <!-- WOLFGATE-GENERATED END -->

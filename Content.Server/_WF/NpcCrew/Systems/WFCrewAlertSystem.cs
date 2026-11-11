@@ -220,7 +220,8 @@ public sealed partial class WFCrewAlertSystem : EntitySystem
     public bool OwnKind(EntityUid first, EntityUid second)
     {
         return TryComp<WFCrewShipProfileComponent>(first, out var own) && TryComp<WFCrewShipProfileComponent>(second, out var other)
-            && own.Profile == other.Profile && _prototypes.TryIndex(own.Profile, out var profile) && profile.ForgivesOwn;
+            && own.Profile == other.Profile && _prototypes.TryIndex(own.Profile, out var profile) && profile.ForgivesOwn
+            && !HasComp<WFCrewSeizedHullComponent>(first) && !HasComp<WFCrewSeizedHullComponent>(second);
     }
 
     /// <summary>Whether whoever knows the vessel, the encounter it is fighting in, vouches for it as the ship's friend.</summary>
@@ -231,9 +232,15 @@ public sealed partial class WFCrewAlertSystem : EntitySystem
         return ev.Friendly;
     }
 
-    /// <summary>Whether two ships fly for the same faction: the same company, or two of one faction's companies.</summary>
+    /// <summary>
+    /// Whether two ships fly for the same faction: the same company, or two of one faction's companies. A seized
+    /// hull flies for nobody.
+    /// </summary>
     private bool SameFaction(EntityUid first, EntityUid second)
     {
+        if (HasComp<WFCrewSeizedHullComponent>(first) || HasComp<WFCrewSeizedHullComponent>(second))
+            return false;
+
         return WFCompanyFamily.Same(CompOrNull<Content.Shared._Mono.Company.CompanyComponent>(first)?.CompanyName,
             CompOrNull<Content.Shared._Mono.Company.CompanyComponent>(second)?.CompanyName);
     }
@@ -409,6 +416,13 @@ public sealed partial class WFCrewAlertSystem : EntitySystem
         return false;
     }
 
+    /// <summary>Ends every alert a crew aboard a ship holds, as when it surrenders.</summary>
+    public void StandDown(EntityUid grid, string group)
+    {
+        if (_alerts.TryGetValue((grid, group), out var alert))
+            Clear((grid, group), alert);
+    }
+
     /// <summary>Raises a local docking alert without treating a changeable security policy as incoming fire.</summary>
     public void ReportDockingThreat(EntityUid grid, string group, EntityUid visitor) => AlertShip(grid, group, visitor, false);
 
@@ -416,6 +430,9 @@ public sealed partial class WFCrewAlertSystem : EntitySystem
     {
         if (grid == attacker || !HasComp<MapGridComponent>(grid) || !IsVessel(attacker)
             || Transform(grid).MapID != Transform(attacker).MapID)
+            return;
+        // A crew that surrendered raises no alarm, whoever fires on it.
+        if (HasComp<WFCrewSurrenderedComponent>(grid))
             return;
         // Only its own gunfire, past the stray allowance, turns a crew on a player vessel of its faction.
         if (!gunfire && _spared.Spared(grid, attacker))
