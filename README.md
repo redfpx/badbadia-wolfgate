@@ -1,11 +1,11 @@
 <!-- WOLFGATE(Branding) START: rebrand from Monolith to Wolfgate -->
 <p align="center"><img alt="Wolfgate" width="800" height="266" src="Resources/Textures/_WF/Branding/Logo/logo.png" /></p>
 
-Wolfgate is a fork of [Monolith](https://github.com/Monolith-Station/Monolith), itself a fork of [Frontier Station 14](https://github.com/new-frontiers-14/frontier-station-14), running on the [Robust Toolbox](https://github.com/space-wizards/RobustToolbox) engine written in C#.
+Badbadia is a fork of [Wolfgate](https://github.com/VanguardControl/Wolfgate), Wolfgate is a fork of [Monolith](https://github.com/Monolith-Station/Monolith), itself a fork of [Frontier Station 14](https://github.com/new-frontiers-14/frontier-station-14), running on the [Robust Toolbox](https://github.com/space-wizards/RobustToolbox) engine written in C#.
 
-This is the primary repo for Wolfgate.
+This is the primary repo for Badbadia's fork of Wolfgate.
 
-If you want to host or create content for Wolfgate, this is the repo you need. It contains both RobustToolbox and the content pack.
+You cannot create content for us, but you can always for our edits. (we highly suggest not doing so as it only fits our needs)
 <!-- WOLFGATE END -->
 
 ## Links
@@ -24,49 +24,12 @@ Contributions are welcome. Wolfgate-specific code lives in `_WF` folders, and ed
 We are not accepting translations on this repository.
 <!-- WOLFGATE END -->
 
-## Building
-
-<!-- WOLFGATE START: reworded for Wolfgate build differences -->
-Refer to [the Space Wizards' guide](https://docs.spacestation14.com/en/general-development/setup/setting-up-a-development-environment.html) for setting up a development environment. Most of it applies, but Wolfgate is not upstream Space Station 14, so some details differ.
-The scripts below make the job easier.
-<!-- WOLFGATE END -->
-
-### Build dependencies
-
-> - Git
-> - .NET SDK 10.0
-
-
-### Windows
-
-> 1. Clone this repository
-> 2. Run `Scripts/bat/updateEngine.bat` in a terminal or in file explorer to download the engine
-> 3. Run `Scripts/bat/buildAllDebug.bat` after making any changes to the source
-> 4. Run `Scripts/bat/runQuickAll.bat` to launch the client and the server
-> 5. Connect to localhost in the client and play
-
-### Linux
-
-> 1. Clone this repository
-> 2. Run `Scripts/sh/updateEngine.sh` in a terminal to download the engine
-> 3. Run `Scripts/sh/buildAllDebug.sh` after making any changes to the source
-> 4. Run `Scripts/sh/runQuickAll.sh` to launch the client and the server
-> 5. Connect to localhost in the client and play
-
-### MacOS
-
-> 1. Clone this repository
-> 2. Run `Scripts/sh/updateEngine.sh` in a terminal to download the engine
-> 3. Run `Scripts/sh/buildAllDebug.sh` after making any changes to the source
-> 4. Run `Scripts/sh/runQuickAll.sh` to launch the client and the server
-> 5. Connect to localhost in the client and play
-
 ## License
 
 <!-- WOLFGATE(Branding) START: reworded license section for Wolfgate branding -->
 See the REUSE headers for detailed licensing information for each file. The work as a whole is licensed under the GNU Affero General Public License version 3.0.
 
-Licensing inherited from Monolith and Frontier:
+Licensing inherited from Wolfgate, Monolith, and Frontier:
 
 - Original code contributed to the Monolith codebase after 04d8ce483f638320d1b85a7aaacdf01442757363 is under the Mozilla Public License version 2.0 with Exhibit B removed. See `LICENSES/MPL-2.0.txt`.
 - Content contributed after commit 2fca06eaba205ae6fe3aceb8ae2a0594f0effee0 is licensed under the GNU Affero General Public License version 3.0, unless otherwise stated. See `LICENSES/AGPL-3.0-or-later.txt`.
