@@ -12,13 +12,13 @@ public sealed class PlanetCVars
     /// Master switch for Wolfgate planet networks: orbit layers, surfaces and the orbit FTL jumps.
     /// </summary>
     public static readonly CVarDef<bool> PlanetNetworks =
-        CVarDef.Create("wg.planet_networks", false, CVar.SERVERONLY);
+        CVarDef.Create("wg.planet_networks", true, CVar.SERVERONLY);
 
     /// <summary>
     /// Whether planets run their weather and storms. Off keeps every world clear; the day cycle runs either way.
     /// </summary>
     public static readonly CVarDef<bool> PlanetWeather =
-        CVarDef.Create("wg.planet_weather", false, CVar.SERVERONLY);
+        CVarDef.Create("wg.planet_weather", true, CVar.SERVERONLY);
 
     /// <summary>
     /// Whether planet layers other than orbit are sent to a client only while a viewer is on or near them, instead
