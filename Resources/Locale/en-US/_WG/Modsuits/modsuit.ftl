@@ -1,4 +1,8 @@
 modsuit-core-slot-name = Core
+modsuit-core-slot-wrong-item = That doesn't fit the core slot.
+modsuit-core-slot-locked = The core slot is locked shut.
+modsuit-cell-slot-wrong-item = That cell doesn't fit this MOD core.
+modsuit-cell-slot-occupied = This MOD core already has a cell.
 modsuit-core-full = The core is already fully charged!
 modsuit-core-refueled = You feed the core.
 
@@ -20,6 +24,9 @@ modsuit-seal-broken = The suit's seal breaks!
 modsuit-part-sealed = The part is sealed to the suit, deactivate it first!
 modsuit-part-retract-instead = Retract the part through the suit instead!
 modsuit-part-slot-occupied = You can't fit the suit part over {THE($item)}!
+modsuit-hardsuit-too-thick = The clothing underneath is too thick to deploy the MODsuit over.
+modsuit-springlock-click = { $module } makes an ominous click...
+modsuit-springlock-snap = { $module } snaps shut inside your suit!
 
 modsuit-part-seal-up = {CAPITALIZE(THE($part))} seals.
 modsuit-part-seal-down = {CAPITALIZE(THE($part))} unseals.
@@ -180,7 +187,7 @@ modsuit-ui-user-status = User Status
 modsuit-ui-user-name = Name
 modsuit-ui-user-assignment = Assignment
 modsuit-ui-suit-unpowered = SUIT UNPOWERED
-modsuit-ui-charge-bar = {$current} of {$max} ({$percent}%)
+modsuit-ui-charge-bar = {$current} of {$max} kJ ({$percent}%)
 modsuit-ui-no-core-detected = No Core Detected
 modsuit-ui-cell-missing = Power Cell Missing
 modsuit-ui-complexity-used = {$current} of {$max} complexity used

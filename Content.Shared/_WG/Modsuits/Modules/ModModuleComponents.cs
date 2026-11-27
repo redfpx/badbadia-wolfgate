@@ -96,6 +96,16 @@ public sealed partial class ModEmpShieldModuleComponent : Component
     public bool RequireActive = true;
 }
 
+[RegisterComponent, NetworkedComponent, AutoGenerateComponentState]
+public sealed partial class ModShieldActionModuleComponent : Component
+{
+    [DataField]
+    public EntProtoId Action = "ActionActivatePersonalShield";
+
+    [DataField, AutoNetworkedField]
+    public EntityUid? ActionEntity;
+}
+
 [RegisterComponent, NetworkedComponent]
 public sealed partial class ModMouthholeModuleComponent : Component
 {
@@ -240,6 +250,10 @@ public sealed partial class ModPatientTransportComponent : Component
     [DataField]
     public bool RequireRestrained;
 
+    /// <summary>Idle drain while a bag is linked; TG's criminal capture uses 3.0 DEFAULT_CHARGE_DRAIN.</summary>
+    [DataField]
+    public float LinkedIdlePower;
+
     [DataField]
     public TimeSpan CaptureDelay = TimeSpan.FromSeconds(1.5);
 
@@ -316,8 +330,9 @@ public sealed partial class ModEnergyShieldModuleComponent : Component
     [DataField, AutoNetworkedField, AutoPausedField]
     public TimeSpan NextCharge;
 
+    /// <summary>Joules spent per block; TG's energy shield charges 2.0 DEFAULT_CHARGE_DRAIN.</summary>
     [DataField]
-    public float BlockPower = 30f;
+    public float BlockPower = 100f;
 
     [DataField]
     public SoundSpecifier? BlockSound = new SoundPathSpecifier("/Audio/Weapons/block_metal1.ogg");
@@ -384,6 +399,54 @@ public sealed partial class ModDnaLockModuleComponent : Component
 
     [DataField]
     public SoundSpecifier? Sound = new SoundPathSpecifier("/Audio/Machines/id_swipe.ogg");
+}
+
+/// <summary>A springlock or magnetic deployment module that changes how fast the suit seals.</summary>
+[RegisterComponent, NetworkedComponent]
+public sealed partial class ModSpringlockModuleComponent : Component
+{
+    [DataField]
+    public float ActivationStepMultiplier = 0.5f;
+
+    /// <summary>Whether water or touch reagents can make the mechanism snap shut.</summary>
+    [DataField]
+    public bool Deadly = true;
+
+    [DataField]
+    public float WaterVaporThreshold = 5f;
+
+    [DataField]
+    public TimeSpan MinSnapDelay = TimeSpan.FromSeconds(3);
+
+    [DataField]
+    public TimeSpan MaxSnapDelay = TimeSpan.FromSeconds(5);
+
+    [DataField]
+    public DamageSpecifier SnapDamage = new()
+    {
+        DamageDict =
+        {
+            ["Slash"] = 200,
+            ["Piercing"] = 100,
+        },
+    };
+
+    [ViewVariables]
+    public bool SetOff;
+
+    [ViewVariables]
+    public TimeSpan? SnapAt;
+}
+
+/// <summary>Marks a wearer whose active springlock module is waiting to snap or is armed.</summary>
+[RegisterComponent]
+public sealed partial class ModSpringlockWearerComponent : Component
+{
+    [DataField]
+    public EntityUid? Module;
+
+    [ViewVariables]
+    public TimeSpan NextGasCheck;
 }
 
 [RegisterComponent, NetworkedComponent]

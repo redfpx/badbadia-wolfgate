@@ -5,6 +5,7 @@ using Content.Client._WG.UserInterface.Controls;
 using Content.Client.Options.UI;
 using Content.Client.UserInterface.Systems.EscapeMenu;
 using Content.Shared._WG.CCVar;
+using Content.Shared._WG.CustomMarkings;
 using Content.Shared._WG.Genitals;
 using Content.Shared._WG.Genitals.Profile;
 using Content.Shared._WG.Genitals.Prototypes;
@@ -124,6 +125,8 @@ public sealed partial class WolfgateGenitalEditor : BoxContainer
         NsfwTextEdit.Placeholder = new Rope.Leaf(Loc.GetString("wg-genitals-nsfw-text-placeholder"));
         NsfwTextEdit.OnTextChanged += _ => OnNsfwTextChanged();
         IoCManager.InjectDependencies(this);
+        InitializeNsfwHeadshot();
+        UpdateNsfwHeadshot();
 
         _previewMode.Add(GenitalPreviewMode.AsWorn, Loc.GetString("wg-genitals-preview-worn"));
         _previewMode.Add(GenitalPreviewMode.UnderwearOnly, Loc.GetString("wg-genitals-preview-underwear"));
@@ -197,7 +200,8 @@ public sealed partial class WolfgateGenitalEditor : BoxContainer
 
     /// <summary>Rebuilds gates, presets, notices and tile colours. Never raises OnProfileChanged.</summary>
     /// <remarks>Runs on every age keystroke and species change, so it must never write to the profile.</remarks>
-    public void SetContext(string species, Sex sex, int age, Color skinColor, IReadOnlyCollection<Marking> markings)
+    public void SetContext(string species, Sex sex, int age, Color skinColor,
+        IReadOnlyCollection<Marking> markings, IReadOnlyCollection<CustomMarking> customMarkings)
     {
         // A confirmation asked for another species or sex no longer describes what would be applied.
         if (species != _species || sex != _sex)
@@ -221,6 +225,13 @@ public sealed partial class WolfgateGenitalEditor : BoxContainer
                 _wearsUndergarment = true;
         }
 
+        // Check custom markings for undergarment placements.
+        foreach (var custom in customMarkings)
+        {
+            if (custom.Placement is CustomMarkingPlacement.UndergarmentTop or CustomMarkingPlacement.UndergarmentBottom)
+                _wearsUndergarment = true;
+        }
+
         Refresh();
     }
 
@@ -237,6 +248,10 @@ public sealed partial class WolfgateGenitalEditor : BoxContainer
         if (Rope.Collapse(NsfwTextEdit.TextRope) != _profile.NsfwText)
             NsfwTextEdit.TextRope = new Rope.Leaf(_profile.NsfwText);
         UpdateNsfwCounter();
+
+        // An editor left open would write into the newly loaded character.
+        CloseNsfwHeadshotWindow();
+        UpdateNsfwHeadshot();
     }
 
     /// <summary>Hands typed text straight to the profile editor; it carries no organ rules, so no full refresh.</summary>
@@ -305,6 +320,7 @@ public sealed partial class WolfgateGenitalEditor : BoxContainer
         _consent.OnServerDataLoaded -= RefreshConsent;
         _cfg.UnsubValueChanged(WolfgateCVars.AnatomyEnabled, OnAnatomyEnabledChanged);
         ResetPreview();
+        CloseNsfwHeadshotWindow();
     }
 
     // Columns come from the width on offer, not the current width, so the grids can shrink as well as grow.

@@ -647,6 +647,9 @@ public abstract partial class SharedGunSystem : EntitySystem
         if (fromCoordinates is null)
             return;
 
+        if (direction == Vector2.Zero) // WOLFGATE(Weapons): a shot at a target on the shooter's own spot has no direction to trace
+            return;
+
         var hitscanEv = new HitscanTraceEvent
         {
             FromCoordinates = fromCoordinates.Value,
@@ -765,7 +768,8 @@ public abstract partial class SharedGunSystem : EntitySystem
         }
         if (playSound && TryComp<CartridgeAmmoComponent>(entity, out var cartridge))
         {
-            Audio.PlayPvs(cartridge.EjectSound, entity, AudioParams.Default.WithVariation(SharedContentAudioSystem.DefaultVariation).WithVolume(-1f));
+            // Audio.PlayPvs(cartridge.EjectSound, entity, AudioParams.Default.WithVariation(SharedContentAudioSystem.DefaultVariation).WithVolume(-1f));
+            WGLightSound.PlayPvs(cartridge.EjectSound, entity, AudioParams.Default.WithVariation(SharedContentAudioSystem.DefaultVariation).WithVolume(-1f)); // WOLFGATE(Performance): casings make no sound entity
         }
     }
 

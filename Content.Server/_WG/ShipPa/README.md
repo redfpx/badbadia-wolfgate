@@ -22,6 +22,8 @@ markers (`WGEncounterCollectMarkersEvent`). It stands until CANCEL SOS, which sa
 after `DistressDuration` (20 minutes). A new call waits out `DistressCooldown` (one minute) after the last one.
 Other code calls `ShipAlertSystem.SetDistress`.
 
+Active admins skip the PA's cooldowns: announcements, starting a track, skipping one and the distress call.
+
 Entry points: `ShipPaSystem` (speakers, broadcasts, alarms), `ShipAlertSystem` (situation codes, general quarters,
 announcements and the playlist messages from the console), `ShipPaPlaylistSystem` (the queue), `ShipAlarmPanel` (the
 console panel), the client `ShipPaMeshSystem` (plays the ship's programme from real speaker positions), and
@@ -117,8 +119,6 @@ console panel), the client `ShipPaMeshSystem` (plays the ship's programme from r
 
 ## Non-modular edits
 
-- [`Content.Client/Options/UI/Tabs/AudioTab.xaml`](../../../Content.Client/Options/UI/Tabs/AudioTab.xaml): personal PA volume
-- [`Content.Client/Options/UI/Tabs/AudioTab.xaml.cs`](../../../Content.Client/Options/UI/Tabs/AudioTab.xaml.cs): personal PA volume
 - [`Resources/Prototypes/_Mono/Guidebook/shipyard.yml`](../../../Resources/Prototypes/_Mono/Guidebook/shipyard.yml)
 - [`Resources/Prototypes/Entities/Structures/Wallmounts/air_alarm.yml`](../../../Resources/Prototypes/Entities/Structures/Wallmounts/air_alarm.yml): stands in for PA speakers on ships that have none
 

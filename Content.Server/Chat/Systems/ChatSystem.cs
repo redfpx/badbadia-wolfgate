@@ -5,6 +5,7 @@ using System.Text;
 using Content.Server.Administration.Logs;
 using Content.Server.Administration.Managers;
 using Content.Server._WG.ChatWebhook; // WOLFGATE(ChatWebhook)
+using Content.Shared._WG.AdminObserver; // WOLFGATE(AdminObserver)
 using Content.Shared._WG.ChatFont; // WOLFGATE(ChatFont)
 using Content.Server.Chat.Managers;
 using Content.Server.Discord.DiscordLink;
@@ -190,7 +191,7 @@ public sealed partial class ChatSystem : SharedChatSystem
         LanguagePrototype? languageOverride = null // Einstein Engines - Language
         )
     {
-        if (HasComp<GhostComponent>(source))
+        if (HasComp<GhostComponent>(source) && !HasComp<WGManifestedComponent>(source)) // WOLFGATE(AdminObserver): a manifested admin observer speaks in character
         {
             // Ghosts can only send dead chat messages, so we'll forward it to InGame OOC.
             TrySendInGameOOCMessage(source, message, InGameOOCChatType.Dead, range == ChatTransmitRange.HideChat, shell, player);
@@ -300,6 +301,8 @@ public sealed partial class ChatSystem : SharedChatSystem
             }
         }
 
+        if (desiredType == InGameICChatType.Speak && WgSpeechMuffledByVacuum(source, language)) // WOLFGATE(Speech): thin air only carries a whisper
+            desiredType = InGameICChatType.Whisper; // WOLFGATE(Speech)
         // Otherwise, send whatever type.
         switch (desiredType)
         {
@@ -658,7 +661,9 @@ public sealed partial class ChatSystem : SharedChatSystem
         var prefix = _language.GetLanguageFromPrefix(source, ref originalMessage, out var parsed, true); // Starlight: Language prefixes
         language = parsed && _language.CanSpeak(source, prefix) ? prefix : language;
 
-        var message = TransformSpeech(source, FormattedMessage.RemoveMarkupOrThrow(originalMessage), language); // Einstein Engines - Language
+        // WOLFGATE(Speech): permissive, so a stray [ in a whisper no longer throws and drops the message
+        // var message = TransformSpeech(source, FormattedMessage.RemoveMarkupOrThrow(originalMessage), language); // Einstein Engines - Language
+        var message = TransformSpeech(source, FormattedMessage.RemoveMarkupPermissive(originalMessage), language); // WOLFGATE(Speech)
         if (message.Length == 0)
             return;
 

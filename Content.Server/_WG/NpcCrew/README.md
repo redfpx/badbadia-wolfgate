@@ -156,6 +156,10 @@ worker who gets no nearer for ten seconds (a railing in the way, or no path) giv
 Unreachable work times out visibly and can be retried with pause/resume. These jobs require a deckhand, a pilot for the objective queue, and suitable EVA equipment.
 Repair skips snapshot entries their SRD cannot rebuild, respecting prototype and grid restrictions and tool modes.
 
+Internals come off in breathable air whichever tank feeds them, and go back on in bad air on any tank a crewman
+carries; other gases must fall under 0.5 kPa before he takes them off and pass 1 kPa before he puts them on, so he
+doesn't flick them. An idle crewman in safe air whose tank is under 600 kPa walks to a canister of breathable gas on his
+ship and fills the tank to ten atmospheres from it (`WGCrewEvaSystem.UpdateRefill`); the helm and the guns don't leave.
 Default crew loadouts include pressure suits, helmets, masks and finite oxygen tanks. Internals connect before
 work and in unsafe air. Below the reserve threshold, crew replace the tank from a reachable loose spare or leave
 work for safe air; once safe they can seek a filled tank on their home ship. Oxygen is not replenished magically.
@@ -229,7 +233,9 @@ braced against for a second and shoved onto a free tile beside it, never ahead o
 doorway (`NPCSteeringSystem.Shove.cs`). The pathfinder marks points held only by unanchored pullables as `Movable`.
 Encounter cargo and raiders' stashes go on `CargoTiles`: open deck all round first, else a tile that keeps the deck
 joined and blocks no door or machine.
-Reloading uses real compatible magazines from equipment slots through normal item interaction. Spent guns are
+Reloading uses real compatible magazines from equipment slots, then from webbing or a pack worn in one, through
+normal item interaction. Fighting crews carry a magazine in a pocket and three to six more in webbing on the belt,
+with the sidearm in the other pocket; a freighter's crew keeps its one or two magazines. Spent guns are
 holstered in favor of a loaded sidearm, melee weapon, or empty hands; no ammunition is created, unless the crewman has
 `InfiniteAmmo` (a commanded ship's roster sets it), when his magazine refills in place. Two-handed guns are wielded
 when drawn and after a reload, for their wielded spread.
@@ -246,13 +252,30 @@ the crewman's cached threat check and replans him on the spot (`WGCrewSystem.OnB
 a hostile aboard but may not hunt it braces: weapon drawn and loaded, facing its way, for up to 90 s without sight of
 it (`WGCrewWeaponSystem.Brace.cs`). Regulars and up also throw a grenade they carry (any slot item with a use timer;
 reaver riflemen carry one `ExGrenade`) at a known hostile out of sight for three seconds within nine tiles: shouted
-first, cooked by skill but always with 1.5 s of fuse left on landing, never with a crewmate or bystander in the
-blast, once per crew every 20 s, and nobody hunts into it until it has gone off (`WGCrewGrenadeSystem`). The cooldown
+first, cooked by skill but always with 1.5 s of fuse left on landing, never with a crewmate on his feet or a bystander
+in the blast (a crewman already down, conscious or not, holds no throw back), once per crew every 20 s, and nobody hunts into it until it has gone off (`WGCrewGrenadeSystem`). The cooldown
 is checked again as he arms it, and the blast and flight path (anything a thrown item hits, loose crates included)
 again as it leaves his hand: with someone or something now in the way he picks
 another spot, or holds on while the fuse allows. Veterans and
 elites hunt in pairs, sidestep between shots (upstream `NPCJukeComponent`) and, once a minute, fall back out of the
 hostile's sight past 50 damage to patch up for up to eight seconds (`WGCrewFallBackSystem`).
+
+A crew that is losing a boarding fight musters (`WGCrewMusterSystem`). With two of its own down inside two minutes
+(critical, dead, or on the floor conscious under Wolfmed while the mob state still says alive), three fighters still on
+their feet and a regular or better aboard to lead (an officer a tier above a green crew counts; so does a captain at
+his station), the leader calls it aloud and the fighters stop hunting: they pull back to the crew post nearest to them
+that no hostile is within five tiles of or has a line of sight to and that has a place for each of them (failing that,
+the nearest with room for two, and the rest cover from where they stand), take places up to two tiles round it, the
+back of the room first, and hold with weapons up, whatever each man's own skill (`Assess` gives `Brace` to every
+follower, and the muster branch of the HTN root walks him to his place). They still shoot what they see and throw
+grenades round the corner. The pilot, gunners, captain and radio operator stay out of the muster and, while it stands,
+go after nobody they cannot see unless he has just struck them. Once most are in place and nobody has seen a hostile
+for ten seconds, or after 45 s regardless, the leader calls the push and every follower goes after the hostile at
+once, hunt party or not, for 30 s and for as long as they keep seeing him; then they fall back to a fresh rally point.
+The muster keeps the followers' attack memory alive while it stands. It ends when its leader is down with nobody to
+take over, fewer than two fighters stand, no hostile has been aboard for 20 s or none has been seen for 90 s; a new one
+takes two fresh losses, and a crewman already counted is not counted again for going down further. Green crews without
+an officer never muster.
 
 Since the Lupercal's first playtest: a crewman who sees a trespasser on a Warn ship names him and the zone aloud,
 points him out (`PointingSystem.TryNpcPoint`) and gives him his time, gives a last warning ten seconds before it runs
@@ -260,10 +283,58 @@ out and says he is engaging when the fighters turn (`WGCrewSecuritySystem.Challe
 carrying one of the crew's downed or dead is told to put him down and has ten seconds (`WGCrewConductSystem.Bodies.cs`).
 Crew out of a fight patch their own wounds, one item every eight seconds, and anyone hurt past 40 damage counts as
 calling for a medic (`WGCrewMedicSystem.SelfCare.cs`). Crew out of a fight stop short of a burning tile rather than walk
-through it (`NPCSteeringSystem.Fire.cs`). A downed crewman stops bumping doors open, a dead one's card comes off his ship's allow list and out of
+through it (`NPCSteeringSystem.Fire.cs`), walk rather than run past a puddle a run would slip them on (`NPCSteeringSystem.Walk.cs`), and when stuck stop short of a spot another crewman holds or step aside off the line they were stuck on, since a repath from the same spot runs back into the same body (`NPCSteeringSystem.Unstick.cs`). A guard's next patrol point passes over points another crewman stands on or is headed for, and a crewman at his post walks back only once he strays past `PostLeaveRange` (2.5), wider than `PostRange`, so a crewmate's nudge doesn't send him back and forth. Medics carry the people they take in (`WGCrewMedicSystem.Carry.cs`, through `CarryingSystem.TryCrewCarry`) and pull only when a carry fails. A downed crewman stops bumping doors open, a dead one's card comes off his ship's allow list and out of
 its zone keys, and both come back on revival with the door lists it was on (`WGShipAccessServerSystem.SuspendEntry`); a card
 swapped while he was down replaces the old one. Janitors (`WGCrewJanitor`, duty Janitor) mop puddles on their own ship
 (`WGCrewShipPuddles`, scored by `WGTargetOnHomeGridCon`) and wash dirt off the floor across it with their own hands, as a cleanbot does, and wait at their post when it's clean.
+A puddle another crewman's plan holds is left to him (`WGTargetUnclaimedCon`, `WGCrewClaimSystem`), as is a dirty tile
+another cleaner is headed for, so several janitors spread out. Every two minutes a janitor may go after a mouse or a
+roach loose on his ship (`WGCrewPestHunterComponent` on the role, `WGCrewPestSystem`, `WGCrewPestOperator`), one
+hunter to a pest, for up to 45 s. He bins loose rubbish (anything tagged Trash, the medics' spent medipens included)
+in the nearest disposal unit, one piece at a time and one janitor to a piece (`WGCrewTidySystem`,
+`WGCrewTidyOperator`), and his wash reaches 60 tiles and takes footprints, blood and dirt off the floor and Wolfmed's
+blood splats off the walls (`WGPickDirtyTileOperator` and `WGCleanTileOperator` with `stains`).
+
+Revived crew get back to it. A deckhand's built-in repair tool, taken at death so his body is no endless tool, comes
+back with his life (`WGCrewSystem.RestoreRepair`). A crewman left lying in a bed or on a table gets up once he is up
+again and no medic has him: at once under 40 damage, else after two minutes' rest (`WGCrewRoutineSystem.GetUp`; seats
+he is meant to sit in, a vehicle's or a break's, are left alone). Roster crew are dressed with some variety when staffed
+(`wgCrewWardrobe` prototypes in `wardrobe.yml`, by role: colours, skirts, caps, glasses, scarves, pride pins), what
+each then wears is remembered (`WGCrewOutfitComponent`), and a crewman stripped of any of it (for surgery, by a looter,
+at his death) fetches each piece back from the floor or an unheld container and puts it on before other work
+(`WGCrewOutfitSystem`, `WGCrewRedressOperator`).
+
+Vermin are no boarders (`WGCrewSecuritySystem.IsFauna`): an animal that is no person, cyborg or borer and whose faction
+and the crewman's aren't hostile either way is neither warned, reported, pointed at nor shot. A cortical borer is never
+authorized and always answered as hostile, whatever the ship's command or zone says (`IsAlwaysHostile`).
+
+Readiness (`WGCrewReadinessSystem`) follows the ship's PA (ShipPa): general quarters, Code Red or Black is Battle, Code
+Yellow is Alert. At Battle every crewman but the helm and the guns goes to his post and holds there
+(`WGCrewAtStationsPrecondition`, `WGCrewStationsCompound`); on-sight hands keep their weapons out
+(`WGCrewStationsOperator`, and the auto-holster leaves them be); patrols stop. Any change of readiness ends breaks,
+replans the crew and gets a bark (`stations`, `alert`, `stand-down`).
+
+Breaks (`WGCrewDowntimeSystem`, `WGCrewDowntimeComponent`, given to roster crew other than the helm and the guns when
+staffed): every 8 to 16 minutes at Code Green, with no fight, job, patient or pest on, a crewman buys a snack or a
+drink from a vending machine aboard (`TryEjectVendorItem`), picks it up, eats or drinks it in a free chair through the
+normal use-in-hand, puts the wrapper or the empty in a disposal unit, or just sits down a while. A break gives up after
+five minutes, and only one crewman of a role on a ship is away at a time.
+
+Chefs (`WGCrewChef`, duty Chef, post `WGShipCrewPostChef`, `chef.yml`) keep a small menu (`WGCrewChefComponent.Menu`:
+a recipe and a count each) stocked on the galley's serving counter (`WGCrewChefServeSpot` markers, else tables beside
+the post) (`WGCrewChefSystem`). A dish that runs short is cooked for real: the recipe's solid ingredients come from the
+stores within 10 m (crates, lockers, the smart fridge or loose), go into a free powered appliance of the recipe's type,
+and the appliance is started with the recipe's own time; the result goes on the counter. Nothing is spawned as food.
+A `WGCrewChefPantry` crate gets one dish's worth of ingredients every four minutes while the chef works, up to two
+sets per dish, so the galley stops when its stores and its chef are gone. See `Docs/_WG/NpcCrew/chef.md`.
+
+Bartenders (`WGCrewBartender`, duty Bartender, post `WGShipCrewPostBartender`, `bartender.yml`) take drink orders said
+at the bar ("a gin and tonic, please", matched against each `wgCrewDrink`'s Fluent keywords) or picked from their
+"Order a drink" verbs, and serve them in turn (`WGCrewBartenderSystem`): a glass from the rack, a two-second pour at
+each dispenser holding an ingredient, the reagents taken from its real bottles so mixes react in the glass, then the
+glass set on the counter in front of the customer or handed over. Drinks are free, the bottles run dry, and the barred
+and the crew's attackers are refused. Idle, he takes empty glasses off the bar back onto his rack. See
+`Docs/_WG/NpcCrew/bartender.md`.
 Hull impacts from another ship's artillery raise crew alerts and a radio mayday through the existing projectile
 handler. Gunners walk to an available powered console and use Mono's ship targeting and fire-control path only
 against explicitly reported hostile vessels, excluding friendly factions. Console loss, incapacitation, player
@@ -285,13 +356,16 @@ in beds with minor injuries; a surgeon works the beds. `WGCrewMayTreatEvent` on 
 someone (ShipCommand refuses the barred and the crew's attackers), and a medic never treats whoever attacked him.
 Each step reads the patient as they are and is a do-after the medic stands still for: shock a heart that can be
 restarted (`WolfmedRevivalSystem.TryDefibrillate`; a paramedic gives three shocks on the spot), CPR for an arrest
-that can't, a tourniquet on a limb's undressable bleed, gauze on any other bleed, epinephrine for the unconscious and
-dylovene above a toxin load (each at most once a minute), then brutepack, medicated suture and regenerative mesh, applied through
+that can't, a tourniquet on a limb's undressable bleed, gauze on any other bleed, an emergency medipen for the
+unconscious and an anti-poison medipen above a toxin load, a brute or burn auto-injector for 40 or more of that damage
+(each at most once a minute; real pens through `HypospraySystem.TryDoInject`, the spent pen dropped beside the patient),
+then brutepack, medicated suture and regenerative mesh, applied through
 `WoundHealingSystem.TryApplyHealing` with healing items the medic keeps off the map, so his kit never runs out. A
-paramedic patches minor injuries where the patient lies; anyone downed or with more damage than `SeriousDamage` he
-drags to the nearest free medical bed (`WGMedicalBedComponent`, on the medical and stasis beds; any bed that heals on a
-grid with none) (or the unrevivable dead to a morgue drawer) once the bleeding and the heart
-are seen to, and the surgeon takes it from there. The shock count and the dose clocks are the patient's
+paramedic carries anyone downed to the nearest free medical bed (`WGMedicalBedComponent`, on the medical and stasis
+beds; any bed that heals on a grid with none) (or the unrevivable dead to a morgue drawer) once the bleeding and the
+heart are seen to, and the surgeon takes it from there. Someone on their feet is treated where they stand, however
+hurt, and never dragged; a patient who gets up and walks away from a bed or out of a medic's hands, and isn't calling
+for help, is let go with a word (`WalkedOff`). The shock count and the dose clocks are the patient's
 (`WGCrewPatientCare`), whichever medic gave them, so letting a patient go and taking them again repeats nothing. With
 no free bed or drawer a paramedic does what he can where the patient lies and then leaves them for 30 s, and a body
 waiting so comes after every living patient. A medic who gets no nearer his patient, or their bed, for 30 s gives them
@@ -304,7 +378,9 @@ is down, dead but revivable (or only lacking blood or a heart) or badly hurt wit
 powered autodoc on his home grid and put in it. Before each run he fills the pod's reservoirs (an empty slot gets the
 bottle from `Reservoirs`, anything there is topped back up) and puts the species' own missing part or organ, from the
 patient's body prototype, in its tray, which is what lets the pod plan the replacement; then it plans its whole triage
-and he starts it. He answers it when it waits for a part, starts another run while it still finds work (up to
+and he starts it. When it waits on clothing he takes the garments off by hand and leaves them on the floor
+(`AutodocSystem.TakeOffBlocking`) before its shears would cut them; at a table too, what he takes off lands on the
+floor, never inside a pod or a carrier with the patient. He answers it when it waits for a part, starts another run while it still finds work (up to
 `OperationsPerPatient`), and then takes the patient out and back to a bed, where they rest a while before he looks at
 them for the pod again. Brains are never replaced. Assisting is a later phase.
 
@@ -359,14 +435,21 @@ crew never turns on what it carries, such as the Remade aboard a flesh ship.
 - [`Content.Server/_WG/NpcCrew/Commands/WGCrewCommand.cs`](Commands/WGCrewCommand.cs)
 - [`Content.Server/_WG/NpcCrew/Components/WGCaptainComponent.cs`](Components/WGCaptainComponent.cs)
 - [`Content.Server/_WG/NpcCrew/Components/WGCrewArmedGrenadeComponent.cs`](Components/WGCrewArmedGrenadeComponent.cs)
+- [`Content.Server/_WG/NpcCrew/Components/WGCrewBartenderComponent.cs`](Components/WGCrewBartenderComponent.cs)
+- [`Content.Server/_WG/NpcCrew/Components/WGCrewChefComponent.cs`](Components/WGCrewChefComponent.cs)
+- [`Content.Server/_WG/NpcCrew/Components/WGCrewChefPantryComponent.cs`](Components/WGCrewChefPantryComponent.cs)
+- [`Content.Server/_WG/NpcCrew/Components/WGCrewChefServeSpotComponent.cs`](Components/WGCrewChefServeSpotComponent.cs)
 - [`Content.Server/_WG/NpcCrew/Components/WGCrewComponent.cs`](Components/WGCrewComponent.cs)
+- [`Content.Server/_WG/NpcCrew/Components/WGCrewDowntimeComponent.cs`](Components/WGCrewDowntimeComponent.cs)
 - [`Content.Server/_WG/NpcCrew/Components/WGCrewEngineerComponent.cs`](Components/WGCrewEngineerComponent.cs)
 - [`Content.Server/_WG/NpcCrew/Components/WGCrewGrabberComponent.cs`](Components/WGCrewGrabberComponent.cs)
 - [`Content.Server/_WG/NpcCrew/Components/WGCrewHuntedHullComponent.cs`](Components/WGCrewHuntedHullComponent.cs)
 - [`Content.Server/_WG/NpcCrew/Components/WGCrewMedicComponent.cs`](Components/WGCrewMedicComponent.cs)
 - [`Content.Server/_WG/NpcCrew/Components/WGCrewNonLethalComponent.cs`](Components/WGCrewNonLethalComponent.cs)
 - [`Content.Server/_WG/NpcCrew/Components/WGCrewOnSightComponent.cs`](Components/WGCrewOnSightComponent.cs)
+- [`Content.Server/_WG/NpcCrew/Components/WGCrewOutfitComponent.cs`](Components/WGCrewOutfitComponent.cs)
 - [`Content.Server/_WG/NpcCrew/Components/WGCrewPatrolOrdersComponent.cs`](Components/WGCrewPatrolOrdersComponent.cs)
+- [`Content.Server/_WG/NpcCrew/Components/WGCrewPestHunterComponent.cs`](Components/WGCrewPestHunterComponent.cs)
 - [`Content.Server/_WG/NpcCrew/Components/WGCrewPropertyComponent.cs`](Components/WGCrewPropertyComponent.cs)
 - [`Content.Server/_WG/NpcCrew/Components/WGCrewRadioComponent.cs`](Components/WGCrewRadioComponent.cs)
 - [`Content.Server/_WG/NpcCrew/Components/WGCrewRepairComponent.cs`](Components/WGCrewRepairComponent.cs)
@@ -385,16 +468,25 @@ crew never turns on what it carries, such as the Remade aboard a flesh ship.
 - [`Content.Server/_WG/NpcCrew/Components/WGHoldFireComponent.cs`](Components/WGHoldFireComponent.cs)
 - [`Content.Server/_WG/NpcCrew/Components/WGPilotDutyComponent.cs`](Components/WGPilotDutyComponent.cs)
 - [`Content.Server/_WG/NpcCrew/Components/WGRadioOperatorComponent.cs`](Components/WGRadioOperatorComponent.cs)
+- [`Content.Server/_WG/NpcCrew/HTN/WGCrewAtStationsPrecondition.cs`](HTN/WGCrewAtStationsPrecondition.cs)
+- [`Content.Server/_WG/NpcCrew/HTN/WGCrewBartenderOperator.cs`](HTN/WGCrewBartenderOperator.cs)
 - [`Content.Server/_WG/NpcCrew/HTN/WGCrewBraceOperator.cs`](HTN/WGCrewBraceOperator.cs)
+- [`Content.Server/_WG/NpcCrew/HTN/WGCrewChefOperator.cs`](HTN/WGCrewChefOperator.cs)
+- [`Content.Server/_WG/NpcCrew/HTN/WGCrewDowntimeOperator.cs`](HTN/WGCrewDowntimeOperator.cs)
 - [`Content.Server/_WG/NpcCrew/HTN/WGCrewFallBackOperator.cs`](HTN/WGCrewFallBackOperator.cs)
 - [`Content.Server/_WG/NpcCrew/HTN/WGCrewGrabOperator.cs`](HTN/WGCrewGrabOperator.cs)
 - [`Content.Server/_WG/NpcCrew/HTN/WGCrewGrenadeOperator.cs`](HTN/WGCrewGrenadeOperator.cs)
 - [`Content.Server/_WG/NpcCrew/HTN/WGCrewLoadedGunPrecondition.cs`](HTN/WGCrewLoadedGunPrecondition.cs)
 - [`Content.Server/_WG/NpcCrew/HTN/WGCrewMayFightPrecondition.cs`](HTN/WGCrewMayFightPrecondition.cs)
 - [`Content.Server/_WG/NpcCrew/HTN/WGCrewMedicOperator.cs`](HTN/WGCrewMedicOperator.cs)
+- [`Content.Server/_WG/NpcCrew/HTN/WGCrewMusterOperator.cs`](HTN/WGCrewMusterOperator.cs)
+- [`Content.Server/_WG/NpcCrew/HTN/WGCrewPestOperator.cs`](HTN/WGCrewPestOperator.cs)
+- [`Content.Server/_WG/NpcCrew/HTN/WGCrewRedressOperator.cs`](HTN/WGCrewRedressOperator.cs)
 - [`Content.Server/_WG/NpcCrew/HTN/WGCrewReturnOperator.cs`](HTN/WGCrewReturnOperator.cs)
 - [`Content.Server/_WG/NpcCrew/HTN/WGCrewSidestepOperator.cs`](HTN/WGCrewSidestepOperator.cs)
+- [`Content.Server/_WG/NpcCrew/HTN/WGCrewStationsOperator.cs`](HTN/WGCrewStationsOperator.cs)
 - [`Content.Server/_WG/NpcCrew/HTN/WGCrewTargetOperator.cs`](HTN/WGCrewTargetOperator.cs)
+- [`Content.Server/_WG/NpcCrew/HTN/WGCrewTidyOperator.cs`](HTN/WGCrewTidyOperator.cs)
 - [`Content.Server/_WG/NpcCrew/HTN/WGCrewWorkOperator.cs`](HTN/WGCrewWorkOperator.cs)
 - [`Content.Server/_WG/NpcCrew/HTN/WGDrawWeaponOperator.cs`](HTN/WGDrawWeaponOperator.cs)
 - [`Content.Server/_WG/NpcCrew/HTN/WGHolsterWeaponOperator.cs`](HTN/WGHolsterWeaponOperator.cs)
@@ -404,13 +496,17 @@ crew never turns on what it carries, such as the Remade aboard a flesh ship.
 - [`Content.Server/_WG/NpcCrew/HTN/WGTakeGunneryOperator.cs`](HTN/WGTakeGunneryOperator.cs)
 - [`Content.Server/_WG/NpcCrew/HTN/WGTakeHelmOperator.cs`](HTN/WGTakeHelmOperator.cs)
 - [`Content.Server/_WG/NpcCrew/HTN/WGTargetOnHomeGridCon.cs`](HTN/WGTargetOnHomeGridCon.cs)
+- [`Content.Server/_WG/NpcCrew/HTN/WGTargetUnclaimedCon.cs`](HTN/WGTargetUnclaimedCon.cs)
 - [`Content.Server/_WG/NpcCrew/NPCSystem.Sleep.cs`](NPCSystem.Sleep.cs)
+- [`Content.Server/_WG/NpcCrew/Systems/CarryingSystem.Crew.cs`](Systems/CarryingSystem.Crew.cs)
 - [`Content.Server/_WG/NpcCrew/Systems/FireControlSystem.Crew.cs`](Systems/FireControlSystem.Crew.cs)
 - [`Content.Server/_WG/NpcCrew/Systems/NPCCombatSystem.Crew.cs`](Systems/NPCCombatSystem.Crew.cs)
 - [`Content.Server/_WG/NpcCrew/Systems/NPCRetaliationSystem.Crew.cs`](Systems/NPCRetaliationSystem.Crew.cs)
 - [`Content.Server/_WG/NpcCrew/Systems/NPCSteeringSystem.Access.cs`](Systems/NPCSteeringSystem.Access.cs)
 - [`Content.Server/_WG/NpcCrew/Systems/NPCSteeringSystem.Fire.cs`](Systems/NPCSteeringSystem.Fire.cs)
 - [`Content.Server/_WG/NpcCrew/Systems/NPCSteeringSystem.Shove.cs`](Systems/NPCSteeringSystem.Shove.cs)
+- [`Content.Server/_WG/NpcCrew/Systems/NPCSteeringSystem.Unstick.cs`](Systems/NPCSteeringSystem.Unstick.cs)
+- [`Content.Server/_WG/NpcCrew/Systems/NPCSteeringSystem.Walk.cs`](Systems/NPCSteeringSystem.Walk.cs)
 - [`Content.Server/_WG/NpcCrew/Systems/NuclearReactorSystem.NpcCrew.cs`](Systems/NuclearReactorSystem.NpcCrew.cs)
 - [`Content.Server/_WG/NpcCrew/Systems/PathfindingSystem.Shove.cs`](Systems/PathfindingSystem.Shove.cs)
 - [`Content.Server/_WG/NpcCrew/Systems/PointingSystem.NpcCrew.cs`](Systems/PointingSystem.NpcCrew.cs)
@@ -421,25 +517,35 @@ crew never turns on what it carries, such as the Remade aboard a flesh ship.
 - [`Content.Server/_WG/NpcCrew/Systems/WGCrewAlertSystem.cs`](Systems/WGCrewAlertSystem.cs)
 - [`Content.Server/_WG/NpcCrew/Systems/WGCrewAlertSystem.Docked.cs`](Systems/WGCrewAlertSystem.Docked.cs)
 - [`Content.Server/_WG/NpcCrew/Systems/WGCrewAlertSystem.Mechs.cs`](Systems/WGCrewAlertSystem.Mechs.cs)
+- [`Content.Server/_WG/NpcCrew/Systems/WGCrewBartenderSystem.cs`](Systems/WGCrewBartenderSystem.cs)
+- [`Content.Server/_WG/NpcCrew/Systems/WGCrewBartenderSystem.Orders.cs`](Systems/WGCrewBartenderSystem.Orders.cs)
+- [`Content.Server/_WG/NpcCrew/Systems/WGCrewChefSystem.cs`](Systems/WGCrewChefSystem.cs)
+- [`Content.Server/_WG/NpcCrew/Systems/WGCrewClaimSystem.cs`](Systems/WGCrewClaimSystem.cs)
 - [`Content.Server/_WG/NpcCrew/Systems/WGCrewCommsSystem.cs`](Systems/WGCrewCommsSystem.cs)
 - [`Content.Server/_WG/NpcCrew/Systems/WGCrewConductSystem.Bodies.cs`](Systems/WGCrewConductSystem.Bodies.cs)
 - [`Content.Server/_WG/NpcCrew/Systems/WGCrewConductSystem.cs`](Systems/WGCrewConductSystem.cs)
+- [`Content.Server/_WG/NpcCrew/Systems/WGCrewDowntimeSystem.cs`](Systems/WGCrewDowntimeSystem.cs)
 - [`Content.Server/_WG/NpcCrew/Systems/WGCrewEscortSystem.cs`](Systems/WGCrewEscortSystem.cs)
 - [`Content.Server/_WG/NpcCrew/Systems/WGCrewEvaSystem.cs`](Systems/WGCrewEvaSystem.cs)
 - [`Content.Server/_WG/NpcCrew/Systems/WGCrewFallBackSystem.cs`](Systems/WGCrewFallBackSystem.cs)
 - [`Content.Server/_WG/NpcCrew/Systems/WGCrewFriendlyFireSystem.cs`](Systems/WGCrewFriendlyFireSystem.cs)
 - [`Content.Server/_WG/NpcCrew/Systems/WGCrewGrabberSystem.cs`](Systems/WGCrewGrabberSystem.cs)
 - [`Content.Server/_WG/NpcCrew/Systems/WGCrewGrenadeSystem.cs`](Systems/WGCrewGrenadeSystem.cs)
+- [`Content.Server/_WG/NpcCrew/Systems/WGCrewMedicSystem.Carry.cs`](Systems/WGCrewMedicSystem.Carry.cs)
 - [`Content.Server/_WG/NpcCrew/Systems/WGCrewMedicSystem.Cloning.cs`](Systems/WGCrewMedicSystem.Cloning.cs)
 - [`Content.Server/_WG/NpcCrew/Systems/WGCrewMedicSystem.cs`](Systems/WGCrewMedicSystem.cs)
 - [`Content.Server/_WG/NpcCrew/Systems/WGCrewMedicSystem.SelfCare.cs`](Systems/WGCrewMedicSystem.SelfCare.cs)
 - [`Content.Server/_WG/NpcCrew/Systems/WGCrewMedicSystem.Surgery.cs`](Systems/WGCrewMedicSystem.Surgery.cs)
 - [`Content.Server/_WG/NpcCrew/Systems/WGCrewMedicSystem.Table.cs`](Systems/WGCrewMedicSystem.Table.cs)
+- [`Content.Server/_WG/NpcCrew/Systems/WGCrewMusterSystem.cs`](Systems/WGCrewMusterSystem.cs)
 - [`Content.Server/_WG/NpcCrew/Systems/WGCrewObjectiveSystem.cs`](Systems/WGCrewObjectiveSystem.cs)
 - [`Content.Server/_WG/NpcCrew/Systems/WGCrewObjectiveSystem.Virtual.cs`](Systems/WGCrewObjectiveSystem.Virtual.cs)
+- [`Content.Server/_WG/NpcCrew/Systems/WGCrewOutfitSystem.cs`](Systems/WGCrewOutfitSystem.cs)
+- [`Content.Server/_WG/NpcCrew/Systems/WGCrewPestSystem.cs`](Systems/WGCrewPestSystem.cs)
 - [`Content.Server/_WG/NpcCrew/Systems/WGCrewPlannerSystem.cs`](Systems/WGCrewPlannerSystem.cs)
 - [`Content.Server/_WG/NpcCrew/Systems/WGCrewRallySystem.cs`](Systems/WGCrewRallySystem.cs)
 - [`Content.Server/_WG/NpcCrew/Systems/WGCrewRammingSystem.cs`](Systems/WGCrewRammingSystem.cs)
+- [`Content.Server/_WG/NpcCrew/Systems/WGCrewReadinessSystem.cs`](Systems/WGCrewReadinessSystem.cs)
 - [`Content.Server/_WG/NpcCrew/Systems/WGCrewRoutineSystem.cs`](Systems/WGCrewRoutineSystem.cs)
 - [`Content.Server/_WG/NpcCrew/Systems/WGCrewSecuritySystem.Challenge.cs`](Systems/WGCrewSecuritySystem.Challenge.cs)
 - [`Content.Server/_WG/NpcCrew/Systems/WGCrewSecuritySystem.cs`](Systems/WGCrewSecuritySystem.cs)
@@ -452,6 +558,7 @@ crew never turns on what it carries, such as the Remade aboard a flesh ship.
 - [`Content.Server/_WG/NpcCrew/Systems/WGCrewSpeechSystem.cs`](Systems/WGCrewSpeechSystem.cs)
 - [`Content.Server/_WG/NpcCrew/Systems/WGCrewStealthSystem.cs`](Systems/WGCrewStealthSystem.cs)
 - [`Content.Server/_WG/NpcCrew/Systems/WGCrewSystem.cs`](Systems/WGCrewSystem.cs)
+- [`Content.Server/_WG/NpcCrew/Systems/WGCrewTidySystem.cs`](Systems/WGCrewTidySystem.cs)
 - [`Content.Server/_WG/NpcCrew/Systems/WGCrewUiDiagnosticsSystem.cs`](Systems/WGCrewUiDiagnosticsSystem.cs)
 - [`Content.Server/_WG/NpcCrew/Systems/WGCrewWeaponSystem.Brace.cs`](Systems/WGCrewWeaponSystem.Brace.cs)
 - [`Content.Server/_WG/NpcCrew/Systems/WGCrewWeaponSystem.cs`](Systems/WGCrewWeaponSystem.cs)
@@ -473,6 +580,7 @@ crew never turns on what it carries, such as the Remade aboard a flesh ship.
 
 - [`Content.Shared/_WG/NpcCrew/WGBodyToolSystem.cs`](../../../Content.Shared/_WG/NpcCrew/WGBodyToolSystem.cs)
 - [`Content.Shared/_WG/NpcCrew/WGCompanyFamily.cs`](../../../Content.Shared/_WG/NpcCrew/WGCompanyFamily.cs)
+- [`Content.Shared/_WG/NpcCrew/WGCrewDrinkPrototype.cs`](../../../Content.Shared/_WG/NpcCrew/WGCrewDrinkPrototype.cs)
 - [`Content.Shared/_WG/NpcCrew/WGCrewEngagement.cs`](../../../Content.Shared/_WG/NpcCrew/WGCrewEngagement.cs)
 - [`Content.Shared/_WG/NpcCrew/WGCrewLimits.cs`](../../../Content.Shared/_WG/NpcCrew/WGCrewLimits.cs)
 - [`Content.Shared/_WG/NpcCrew/WGCrewMedicDoAfterEvent.cs`](../../../Content.Shared/_WG/NpcCrew/WGCrewMedicDoAfterEvent.cs)
@@ -481,6 +589,7 @@ crew never turns on what it carries, such as the Remade aboard a flesh ship.
 - [`Content.Shared/_WG/NpcCrew/WGCrewProfilePrototype.cs`](../../../Content.Shared/_WG/NpcCrew/WGCrewProfilePrototype.cs)
 - [`Content.Shared/_WG/NpcCrew/WGCrewRolePrototype.cs`](../../../Content.Shared/_WG/NpcCrew/WGCrewRolePrototype.cs)
 - [`Content.Shared/_WG/NpcCrew/WGCrewSetupMessages.cs`](../../../Content.Shared/_WG/NpcCrew/WGCrewSetupMessages.cs)
+- [`Content.Shared/_WG/NpcCrew/WGCrewWardrobePrototype.cs`](../../../Content.Shared/_WG/NpcCrew/WGCrewWardrobePrototype.cs)
 - [`Content.Shared/_WG/NpcCrew/WGGunnerPolicy.cs`](../../../Content.Shared/_WG/NpcCrew/WGGunnerPolicy.cs)
 - [`Content.Shared/_WG/NpcCrew/WGMedicalBedComponent.cs`](../../../Content.Shared/_WG/NpcCrew/WGMedicalBedComponent.cs)
 - [`Content.Shared/_WG/NpcCrew/WGPilotOrder.cs`](../../../Content.Shared/_WG/NpcCrew/WGPilotOrder.cs)
@@ -502,7 +611,12 @@ crew never turns on what it carries, such as the Remade aboard a flesh ship.
 ### Integration tests
 
 - [`Content.IntegrationTests/Tests/_WG/NpcCrew/WGBodyToolTest.cs`](../../../Content.IntegrationTests/Tests/_WG/NpcCrew/WGBodyToolTest.cs)
+- [`Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewBartenderTest.cs`](../../../Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewBartenderTest.cs)
+- [`Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewLifeTest.cs`](../../../Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewLifeTest.cs)
+- [`Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewLifeTest.Upkeep.cs`](../../../Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewLifeTest.Upkeep.cs)
 - [`Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewMedicTest.cs`](../../../Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewMedicTest.cs)
+- [`Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewPostRangeTest.cs`](../../../Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewPostRangeTest.cs)
+- [`Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewSidestepPruneTest.cs`](../../../Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewSidestepPruneTest.cs)
 - [`Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewSuitHelmetTest.cs`](../../../Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewSuitHelmetTest.cs)
 - [`Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewSurgeonTest.cs`](../../../Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewSurgeonTest.cs)
 - [`Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.Arena.cs`](../../../Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.Arena.cs)
@@ -513,6 +627,7 @@ crew never turns on what it carries, such as the Remade aboard a flesh ship.
 - [`Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.BoardingDevices.cs`](../../../Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.BoardingDevices.cs)
 - [`Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.CaptainHold.cs`](../../../Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.CaptainHold.cs)
 - [`Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.CaptainResume.cs`](../../../Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.CaptainResume.cs)
+- [`Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.Chef.cs`](../../../Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.Chef.cs)
 - [`Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.Circle.cs`](../../../Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.Circle.cs)
 - [`Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.CombatFixes.cs`](../../../Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.CombatFixes.cs)
 - [`Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.Command.cs`](../../../Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.Command.cs)
@@ -527,6 +642,7 @@ crew never turns on what it carries, such as the Remade aboard a flesh ship.
 - [`Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.HullSwaps.cs`](../../../Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.HullSwaps.cs)
 - [`Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.HunterSpeed.cs`](../../../Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.HunterSpeed.cs)
 - [`Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.LineOfFire.cs`](../../../Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.LineOfFire.cs)
+- [`Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.Muster.cs`](../../../Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.Muster.cs)
 - [`Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.Navigation.cs`](../../../Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.Navigation.cs)
 - [`Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.NavigationSettings.cs`](../../../Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.NavigationSettings.cs)
 - [`Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.Objectives.cs`](../../../Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.Objectives.cs)
@@ -556,6 +672,7 @@ crew never turns on what it carries, such as the Remade aboard a flesh ship.
 - [`Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.Stations.cs`](../../../Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.Stations.cs)
 - [`Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.Tactics.cs`](../../../Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.Tactics.cs)
 - [`Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.TargetLifetime.cs`](../../../Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.TargetLifetime.cs)
+- [`Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.ThreatLookup.cs`](../../../Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.ThreatLookup.cs)
 - [`Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.Titles.cs`](../../../Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.Titles.cs)
 - [`Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.Work.cs`](../../../Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.Work.cs)
 - [`Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.Wreck.cs`](../../../Content.IntegrationTests/Tests/_WG/NpcCrew/WGCrewTest.Wreck.cs)
@@ -568,6 +685,8 @@ crew never turns on what it carries, such as the Remade aboard a flesh ship.
 ### Prototypes
 
 - [`Resources/Prototypes/_WG/NpcCrew/ai_factions.yml`](../../../Resources/Prototypes/_WG/NpcCrew/ai_factions.yml)
+- [`Resources/Prototypes/_WG/NpcCrew/bartender.yml`](../../../Resources/Prototypes/_WG/NpcCrew/bartender.yml)
+- [`Resources/Prototypes/_WG/NpcCrew/chef.yml`](../../../Resources/Prototypes/_WG/NpcCrew/chef.yml)
 - [`Resources/Prototypes/_WG/NpcCrew/companies.yml`](../../../Resources/Prototypes/_WG/NpcCrew/companies.yml)
 - [`Resources/Prototypes/_WG/NpcCrew/gear.yml`](../../../Resources/Prototypes/_WG/NpcCrew/gear.yml)
 - [`Resources/Prototypes/_WG/NpcCrew/htn.yml`](../../../Resources/Prototypes/_WG/NpcCrew/htn.yml)
@@ -579,10 +698,13 @@ crew never turns on what it carries, such as the Remade aboard a flesh ship.
 - [`Resources/Prototypes/_WG/NpcCrew/profiles.yml`](../../../Resources/Prototypes/_WG/NpcCrew/profiles.yml)
 - [`Resources/Prototypes/_WG/NpcCrew/roles.yml`](../../../Resources/Prototypes/_WG/NpcCrew/roles.yml)
 - [`Resources/Prototypes/_WG/NpcCrew/stores.yml`](../../../Resources/Prototypes/_WG/NpcCrew/stores.yml)
+- [`Resources/Prototypes/_WG/NpcCrew/wardrobe.yml`](../../../Resources/Prototypes/_WG/NpcCrew/wardrobe.yml)
 
 ### Localization
 
+- [`Resources/Locale/en-US/_WG/NpcCrew/bartender.ftl`](../../../Resources/Locale/en-US/_WG/NpcCrew/bartender.ftl)
 - [`Resources/Locale/en-US/_WG/NpcCrew/challenge.ftl`](../../../Resources/Locale/en-US/_WG/NpcCrew/challenge.ftl)
+- [`Resources/Locale/en-US/_WG/NpcCrew/chef.ftl`](../../../Resources/Locale/en-US/_WG/NpcCrew/chef.ftl)
 - [`Resources/Locale/en-US/_WG/NpcCrew/companies.ftl`](../../../Resources/Locale/en-US/_WG/NpcCrew/companies.ftl)
 - [`Resources/Locale/en-US/_WG/NpcCrew/crew.ftl`](../../../Resources/Locale/en-US/_WG/NpcCrew/crew.ftl)
 - [`Resources/Locale/en-US/_WG/NpcCrew/medics.ftl`](../../../Resources/Locale/en-US/_WG/NpcCrew/medics.ftl)
@@ -596,9 +718,13 @@ crew never turns on what it carries, such as the Remade aboard a flesh ship.
 
 ### Docs
 
+- [`Docs/_WG/NpcCrew/bartender.md`](../../../Docs/_WG/NpcCrew/bartender.md)
+- [`Docs/_WG/NpcCrew/chef.md`](../../../Docs/_WG/NpcCrew/chef.md)
 - [`Docs/_WG/NpcCrew/design.md`](../../../Docs/_WG/NpcCrew/design.md)
 - [`Docs/_WG/NpcCrew/handoff.md`](../../../Docs/_WG/NpcCrew/handoff.md)
 - [`Docs/_WG/NpcCrew/navigation.md`](../../../Docs/_WG/NpcCrew/navigation.md)
+- [`Docs/_WG/NpcCrew/proposals/behaviour-review.md`](../../../Docs/_WG/NpcCrew/proposals/behaviour-review.md)
+- [`Docs/_WG/NpcCrew/proposals/medical-audit.md`](../../../Docs/_WG/NpcCrew/proposals/medical-audit.md)
 
 ## Non-modular edits
 
@@ -640,13 +766,18 @@ crew never turns on what it carries, such as the Remade aboard a flesh ship.
   - compare both bodies for every NPC; the engine helper reads the first fixtures twice.
   - crew out of a fight hold short of a burning tile rather than walk through the fire
   - stop blended input while access-aware crew settle at an obstacle.
+  - stuck crew stop short of a held spot or step aside, as a repath runs back into the same body
+  - a crewman stepping aside reaches that tile before a repath
+- [`Content.Server/NPC/Systems/NPCSteeringSystem.cs`](../../NPC/Systems/NPCSteeringSystem.cs)
+  - crew may have been walking past a puddle
+  - crew walk past a slippery puddle instead of running into it
 - [`Content.Server/NPC/Systems/NPCSteeringSystem.Obstacles.cs`](../../NPC/Systems/NPCSteeringSystem.Obstacles.cs)
   - crew shove a loose crate off their path
   - open authorized doors through normal interaction before considering prying.
 - [`Content.Server/NPC/Systems/NPCSystem.cs`](../../NPC/Systems/NPCSystem.cs)
   - a mob someone plays, such as a possessing admin, has no AI to wake
   - ship crews with something to do must work even without nearby player bodies.
-- [`Content.Server/NPC/Systems/NPCUtilitySystem.cs`](../../NPC/Systems/NPCUtilitySystem.cs): crew keep their chores on the ship they serve
+- [`Content.Server/NPC/Systems/NPCUtilitySystem.cs`](../../NPC/Systems/NPCUtilitySystem.cs): crew keep their chores on the ship they serve, one crewman to each
 - [`Content.Server/Shuttles/Systems/ShuttleSystem.Impact.cs`](../../Shuttles/Systems/ShuttleSystem.Impact.cs): crews take a ramming for an attack
 - [`Content.Server/Verbs/VerbSystem.cs`](../../Verbs/VerbSystem.cs): opt-in tracing for missing menu replies after ghosting.
 - [`Content.Shared/_Onyx/Wounds/WoundDamageRoutingSystem.cs`](../../../Content.Shared/_Onyx/Wounds/WoundDamageRoutingSystem.cs): Lets crew damage scaling skip the routed inner passes.

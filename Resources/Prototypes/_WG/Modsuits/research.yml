@@ -41,6 +41,8 @@
   - ModsuitModuleVisorDiagnostic
   - ModsuitModuleReagentScanner
   - ModsuitModuleJointTorsion
+  - ModsuitModuleSpringlock
+  - ModsuitModuleMagneticDeployment
   - ModsuitModuleGloveTranslator
   - ModsuitModulePlasmaStabilizer
   - ModsuitModuleHatStabilizer
@@ -84,8 +86,8 @@
   - ModsuitModuleAntiGravity
   - ModsuitModuleJetpackAdvanced
   - ModsuitModuleMagbootsAdvanced
+  - ModsuitModuleVoidBoots
   - ModsuitModuleJumpJet
-  - ModsuitModuleEmpShieldAdvanced
   position: -3,-5
   technologyPrerequisites:
   - ModsuitEngineeringTech

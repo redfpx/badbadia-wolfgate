@@ -1,16 +1,22 @@
+using System.Linq;
 using System.Numerics;
 using Content.Client.Administration.UI.CustomControls;
 using Content.Client.UserInterface.Controls;
+using Content.Shared._Mono.Company;
+using Content.Shared._NF.Shipyard.Components;
 using Content.Shared._WG.ShipAdmin;
 using Content.Shared.Administration;
 using Robust.Client.UserInterface;
 using Robust.Client.UserInterface.Controls;
+using Robust.Shared.Prototypes;
 
 namespace Content.Client._WG.ShipAdmin.Tabs;
 
-/// <summary>Who owns the ship, and handing it to someone else: transfer, add a co-owner, remove an owner, release.</summary>
+/// <summary>The ship's name, who owns it, and handing it to someone else: transfer, add a co-owner, remove an owner, release.</summary>
 public sealed class WGShipAdminOwnershipTab : WGShipAdminTab
 {
+    private readonly LineEdit _name;
+    private readonly Button _rename;
     private readonly BoxContainer _owners;
     private readonly PlayerListControl _players;
     private readonly WGShipAdminText _picked;
@@ -25,16 +31,88 @@ public sealed class WGShipAdminOwnershipTab : WGShipAdminTab
     private readonly Button _addOwner;
     private readonly ConfirmButton _release;
 
+    private readonly WGShipAdminDropdown _factions;
+    private readonly List<string> _factionIds = new();
+    private readonly Button _setFaction;
+    private readonly WGShipAdminDropdown _companies;
+    private readonly List<int?> _companyIds = new();
+    private readonly Button _setCompany;
+
     private PlayerInfo? _player;
     private AdminFlags _flags;
+
+    /// <summary>The ship and affiliation the pickers were last set to, so a refresh doesn't undo a pick in progress.</summary>
+    private NetEntity _shown;
+    private string? _shownFaction;
+    private int? _shownCompany;
+    private bool _companyEdited;
+    private bool _companyPickGone;
 
     public override string Title => Loc.GetString("wg-ship-admin-tab-ownership");
 
     public WGShipAdminOwnershipTab()
     {
+        Body.AddChild(Heading(Loc.GetString("wg-ship-admin-ownership-name")));
+        _name = new LineEdit { MinWidth = 260 };
+        _name.IsValid = text => text.Trim().Length > 0 && text.Trim().Length <= ShuttleDeedComponent.MaxNameLength;
+        _rename = new Button { Text = Loc.GetString("wg-ship-admin-ownership-rename"), StyleClasses = { "ButtonSquare" } };
+        _rename.OnPressed += _ => Send(new WGShipAdminRenameMessage(Grid, _name.Text));
+        Body.AddChild(Row(_name, _rename));
+
         _owners = new BoxContainer { Orientation = BoxContainer.LayoutOrientation.Vertical, SeparationOverride = 2 };
         Body.AddChild(Heading(Loc.GetString("wg-ship-admin-overview-owners")));
         Body.AddChild(_owners);
+
+        Body.AddChild(Heading(Loc.GetString("wg-ship-admin-ownership-affiliation")));
+        Body.AddChild(Note(Loc.GetString("wg-ship-admin-ownership-affiliation-note")));
+        _factions = Dropdown();
+        _factionIds.Add(string.Empty);
+        _factions.AddItem(Loc.GetString("wg-ship-admin-none"), 0);
+        var protos = IoCManager.Resolve<IPrototypeManager>();
+        foreach (var faction in protos.EnumeratePrototypes<CompanyPrototype>()
+                     .Where(proto => proto.ID != "None")
+                     .OrderBy(proto => Loc.GetString(proto.Name), StringComparer.CurrentCultureIgnoreCase))
+        {
+            _factions.AddItem(Loc.GetString(faction.Name), _factionIds.Count);
+            _factionIds.Add(faction.ID);
+        }
+
+        _setFaction = new Button
+        {
+            Text = Loc.GetString("wg-ship-admin-ownership-set-faction"),
+            ToolTip = Loc.GetString("wg-ship-admin-ownership-set-faction-tooltip"),
+            StyleClasses = { "ButtonSquare" },
+        };
+        _setFaction.OnPressed += _ =>
+        {
+            var picked = _factions.SelectedId;
+            if (picked >= 0 && picked < _factionIds.Count)
+                Send(new WGShipAdminFactionMessage(Grid, _factionIds[picked]));
+        };
+        Body.AddChild(Row(_factions, _setFaction));
+
+        _companies = Dropdown();
+        _setCompany = new Button
+        {
+            Text = Loc.GetString("wg-ship-admin-ownership-set-company"),
+            ToolTip = Loc.GetString("wg-ship-admin-ownership-set-company-tooltip"),
+            StyleClasses = { "ButtonSquare" },
+        };
+        _setCompany.OnPressed += _ =>
+        {
+            var picked = _companies.SelectedId;
+            if (picked >= 0 && picked < _companyIds.Count)
+                Send(new WGShipAdminCompanyMessage(Grid, _companyIds[picked]));
+        };
+        // A pick by staff is kept through list refreshes; until then the picker follows the ship's company.
+        _companies.OnItemSelected += _ =>
+        {
+            _companyEdited = true;
+            _companyPickGone = false;
+            GateCompany();
+        };
+        Body.AddChild(Row(_companies, _setCompany));
+        SetCompanies(new List<WGShipAdminCompany>());
 
         Body.AddChild(Heading(Loc.GetString("wg-ship-admin-ownership-give")));
         Body.AddChild(Note(Loc.GetString("wg-ship-admin-ownership-give-note")));
@@ -117,7 +195,61 @@ public sealed class WGShipAdminOwnershipTab : WGShipAdminTab
         _dropCompany.Visible = (detail.Flags & WGShipAdminRowFlags.Company) != 0;
 
         Gate(_release, WGShipAdminAction.Release, flags);
+        Gate(_setFaction, WGShipAdminAction.SetFaction, flags);
+        Gate(_rename, WGShipAdminAction.Rename, flags);
+
+        // The name box is only refilled for another ship, so typing isn't wiped by a refresh.
+        if (_shown != detail.Grid)
+            _name.Text = detail.Name;
+
+        if (_shown != detail.Grid || _shownFaction != detail.Faction || _shownCompany != detail.CompanyId)
+        {
+            _shown = detail.Grid;
+            _shownFaction = detail.Faction;
+            _shownCompany = detail.CompanyId;
+            _factions.SelectId(Math.Max(0, _factionIds.IndexOf(detail.Faction)));
+            _companyEdited = false;
+            _companyPickGone = false;
+            _companies.SelectId(Math.Max(0, _companyIds.IndexOf(detail.CompanyId)));
+        }
+
+        GateCompany();
         UpdateButtons();
+    }
+
+    public override void SetCompanies(List<WGShipAdminCompany> companies)
+    {
+        var selected = _companies.SelectedId >= 0 && _companies.SelectedId < _companyIds.Count ? _companyIds[_companies.SelectedId] : null;
+        _companies.Clear();
+        _companyIds.Clear();
+        _companyIds.Add(null);
+        _companies.AddItem(Loc.GetString("wg-ship-admin-none"), 0);
+        foreach (var company in companies)
+        {
+            var label = company.Tag.Length > 0 ? $"[{company.Tag}] {company.Name}" : company.Name;
+            _companies.AddItem(label, _companyIds.Count);
+            _companyIds.Add(company.Id);
+        }
+
+        // Staff's own pick, or the ship's company, which may only now have arrived in the list.
+        var wanted = _companyEdited ? selected : _shownCompany;
+        var index = _companyIds.IndexOf(wanted);
+        _companies.SelectId(Math.Max(0, index));
+
+        // A company staff picked was disbanded: Set must not quietly send None instead.
+        if (_companyEdited && wanted != null && index < 0)
+            _companyPickGone = true;
+
+        GateCompany();
+    }
+
+    private void GateCompany()
+    {
+        Gate(_setCompany, WGShipAdminAction.SetCompany, _flags, (_companyIds.Count > 1 || _shownCompany != null) && !_companyPickGone);
+        if (_companyPickGone)
+            _setCompany.ToolTip = Loc.GetString("wg-ship-admin-ownership-company-gone");
+        else if (WGShipAdminPermissions.Allowed(_flags, WGShipAdminAction.SetCompany))
+            _setCompany.ToolTip = Loc.GetString("wg-ship-admin-ownership-set-company-tooltip");
     }
 
     private Control OwnerRow(WGShipAdminOwner owner, AdminFlags flags, bool removable)

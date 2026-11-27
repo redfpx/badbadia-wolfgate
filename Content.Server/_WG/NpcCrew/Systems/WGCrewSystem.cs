@@ -42,6 +42,7 @@ public sealed partial class WGCrewSystem : EntitySystem
     [Dependency] private MobStateSystem _mobs = default!;
     [Dependency] private SuitSensorSystem _suitSensors = default!;
     [Dependency] private InventorySystem _inventory = default!;
+    [Dependency] private SharedTransformSystem _transform = default!;
 
     private readonly List<EntityUid> _expired = new();
     private readonly List<EntityUid> _kept = new();
@@ -61,6 +62,31 @@ public sealed partial class WGCrewSystem : EntitySystem
 
     /// <summary>Blackboard key holding how close to the post counts as being there.</summary>
     public const string PostRangeKey = "WGCrewPostRange";
+
+    /// <summary>Blackboard key holding how far from the post a crewman strays before he walks back to it.</summary>
+    public const string PostLeaveRangeKey = "WGCrewPostLeaveRange";
+
+    /// <summary>
+    /// Gives a crewman a new post or patrol point. Until he reaches it he walks there from anywhere past
+    /// <see cref="WGCrewComponent.PostRange"/>; <see cref="MarkPostReached"/> then widens that to the leave range.
+    /// </summary>
+    public void SetPost(EntityUid uid, WGCrewComponent crew, HTNComponent htn, EntityCoordinates post)
+    {
+        crew.PostReached = false;
+        _npc.SetBlackboard(uid, PostLeaveRangeKey, crew.PostRange, htn);
+        _npc.SetBlackboard(uid, PostKey, post, htn);
+    }
+
+    /// <summary>Marks the crewman's post reached once he stands within its range, so small nudges no longer send him back.</summary>
+    public void MarkPostReached(EntityUid uid, WGCrewComponent crew, HTNComponent htn, TransformComponent xform)
+    {
+        if (crew.PostReached || !htn.Blackboard.TryGetValue<EntityCoordinates>(PostKey, out var post, EntityManager)
+            || !_transform.InRange(post, xform.Coordinates, crew.PostRange))
+            return;
+
+        crew.PostReached = true;
+        _npc.SetBlackboard(uid, PostLeaveRangeKey, Math.Max(crew.PostLeaveRange, crew.PostRange), htn);
+    }
 
     public override void Initialize()
     {
@@ -348,7 +374,11 @@ public sealed partial class WGCrewSystem : EntitySystem
         EntityManager.System<WGCrewEscortSystem>().Invalidate();
         _crewAccess.SetDown(uid, component, args.NewMobState);
         if (args.NewMobState == MobState.Alive)
+        {
+            // Revival may pass through Critical, so any return to Alive gives back a tool his death took.
+            RestoreRepair(uid, component);
             return;
+        }
 
         EntityManager.System<WGCrewWorkSystem>().CancelWorker(uid);
         if (args.NewMobState == MobState.Dead && HasComp<WGCrewRepairComponent>(uid))
@@ -360,6 +390,34 @@ public sealed partial class WGCrewSystem : EntitySystem
 
         var ev = new WGCrewMemberDownEvent(uid, component.Group, component.Role, args.NewMobState == MobState.Dead, args.Origin);
         RaiseLocalEvent(uid, ref ev, true);
+    }
+
+    /// <summary>
+    /// Gives a revived crewman back the built-in repair tool his body or kit came with, which his death took so the
+    /// corpse would be no endless tool. Without it a revived deckhand never repaired again.
+    /// </summary>
+    private void RestoreRepair(EntityUid uid, WGCrewComponent component)
+    {
+        if (HasComp<WGCrewRepairComponent>(uid))
+            return;
+        var sources = new List<EntityPrototype>();
+        if (MetaData(uid).EntityPrototype is { } body)
+            sources.Add(body);
+        if (component.Role is { } roleId && _prototypes.TryIndex(roleId, out var role) && role.Kit is { } kit
+            && _prototypes.TryIndex<EntityPrototype>(kit, out var parts))
+            sources.Add(parts);
+        foreach (var source in sources)
+        {
+            if (!source.Components.TryGetValue("WGCrewRepair", out var marker)
+                || !source.Components.TryGetValue("ShipRepairTool", out var tool))
+                continue;
+            var registry = new ComponentRegistry { ["ShipRepairTool"] = tool, ["WGCrewRepair"] = marker };
+            // His death took the tool qualities too.
+            if (source.Components.TryGetValue("Tool", out var qualities))
+                registry["Tool"] = qualities;
+            EntityManager.AddComponents(uid, registry);
+            return;
+        }
     }
 
     private void OnSpawnPointMapInit(EntityUid uid, WGCrewSpawnPointComponent component, MapInitEvent args)
@@ -507,8 +565,12 @@ public sealed partial class WGCrewSystem : EntitySystem
             _npc.SetBlackboard(uid, "NavShove", true, htn);
             _npc.SetBlackboard(uid, DutyKey, crew.Duty, htn);
             _npc.SetBlackboard(uid, PostRangeKey, crew.PostRange, htn);
-            if (crew.Post is { } post)
-                _npc.SetBlackboard(uid, PostKey, post, htn);
+            // The same post again (an engagement change re-applies it) keeps whether he has reached it.
+            if (crew.Post is { } post && crew.PostReached
+                && htn.Blackboard.TryGetValue<EntityCoordinates>(PostKey, out var current, EntityManager) && current.Equals(post))
+                _npc.SetBlackboard(uid, PostLeaveRangeKey, Math.Max(crew.PostLeaveRange, crew.PostRange), htn);
+            else if (crew.Post is { } newPost)
+                SetPost(uid, crew, htn, newPost);
             else
                 htn.Blackboard.Remove<EntityCoordinates>(PostKey);
 

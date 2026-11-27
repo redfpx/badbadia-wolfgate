@@ -65,6 +65,24 @@ public sealed partial class ModSphereTransformModuleComponent : Component
     [DataField]
     public float KnockdownSpeedMultiplier = 0.8f;
 
+    /// <summary>Stamina damage the wearer takes for each hard bump.</summary>
+    [DataField]
+    public float BumpStamina = 25f;
+
+    /// <summary>Hard bumps needed before the sphere stuns the wearer and unfolds.</summary>
+    [DataField]
+    public int BumpsBeforeStun = 4;
+
+    [DataField]
+    public TimeSpan BumpStunTime = TimeSpan.FromSeconds(5);
+
+    [DataField]
+    public TimeSpan BumpCooldown = TimeSpan.FromSeconds(0.5);
+
+    /// <summary>Stamina damage the wearer takes for each person run over.</summary>
+    [DataField]
+    public float MobImpactStamina = 15f;
+
     [DataField]
     public float ExplosionCoefficient = 0.8f;
 
@@ -101,8 +119,9 @@ public sealed partial class ModSphereTransformModuleComponent : Component
     [DataField]
     public float MissileSpeed = 20f;
 
+    /// <summary>Joules spent per missile; three missiles cost TG's 3.0 DEFAULT_CHARGE_DRAIN.</summary>
     [DataField]
-    public float MissilePower = 30f;
+    public float MissilePower = 50f;
 
     [DataField]
     public float MissileMaxPressure = Atmospherics.OneAtmosphere * 0.5f;
@@ -145,8 +164,9 @@ public sealed partial class ModSphereDrillComponent : Component
     [DataField]
     public float SpeedCost = 1.4f;
 
+    /// <summary>Joules spent per mined tile; TG's drill charges 1.0 DEFAULT_CHARGE_DRAIN.</summary>
     [DataField]
-    public float PowerCost = 5f;
+    public float PowerCost = 50f;
 
     [DataField]
     public EntityWhitelist? Whitelist;
@@ -190,6 +210,12 @@ public sealed partial class ModSphereFormComponent : Component
 
     [DataField, AutoNetworkedField]
     public Vector2 ImpactDirection;
+
+    [DataField, AutoNetworkedField]
+    public int Bumps;
+
+    [DataField, AutoNetworkedField]
+    public TimeSpan NextBump;
 
     [ViewVariables]
     public Vector2 PreSolveVelocity;

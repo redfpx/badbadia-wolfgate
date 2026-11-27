@@ -46,6 +46,7 @@ share from its slot, or from the counter of a trader hosting it (`ShipyardHostCa
 
 - [`Content.IntegrationTests/Tests/_WG/Shipyard/IronmanShipPurchaseTest.cs`](../../../Content.IntegrationTests/Tests/_WG/Shipyard/IronmanShipPurchaseTest.cs)
 - [`Content.IntegrationTests/Tests/_WG/Shipyard/ShipPurchaseTitleTest.cs`](../../../Content.IntegrationTests/Tests/_WG/Shipyard/ShipPurchaseTitleTest.cs)
+- [`Content.IntegrationTests/Tests/_WG/Shipyard/ShipyardAsyncPurchaseTest.cs`](../../../Content.IntegrationTests/Tests/_WG/Shipyard/ShipyardAsyncPurchaseTest.cs)
 - [`Content.IntegrationTests/Tests/_WG/Shipyard/UsedShipContainedUnsavableTest.cs`](../../../Content.IntegrationTests/Tests/_WG/Shipyard/UsedShipContainedUnsavableTest.cs)
 - [`Content.IntegrationTests/Tests/_WG/Shipyard/UsedShipDeadKeysTest.cs`](../../../Content.IntegrationTests/Tests/_WG/Shipyard/UsedShipDeadKeysTest.cs)
 - [`Content.IntegrationTests/Tests/_WG/Shipyard/UsedShipReinitTest.cs`](../../../Content.IntegrationTests/Tests/_WG/Shipyard/UsedShipReinitTest.cs)
@@ -54,17 +55,19 @@ share from its slot, or from the counter of a trader hosting it (`ShipyardHostCa
 
 ### Prototypes
 
+- [`Resources/Prototypes/_WG/Shipyard/baron.yml`](../../../Resources/Prototypes/_WG/Shipyard/baron.yml)
 - [`Resources/Prototypes/_WG/Shipyard/brute.yml`](../../../Resources/Prototypes/_WG/Shipyard/brute.yml)
 - [`Resources/Prototypes/_WG/Shipyard/bucket.yml`](../../../Resources/Prototypes/_WG/Shipyard/bucket.yml)
 - [`Resources/Prototypes/_WG/Shipyard/carabela.yml`](../../../Resources/Prototypes/_WG/Shipyard/carabela.yml)
-- [`Resources/Prototypes/_WG/Shipyard/Carrier/vox_skipjack.yml`](../../../Resources/Prototypes/_WG/Shipyard/Carrier/vox_skipjack.yml)
 - [`Resources/Prototypes/_WG/Shipyard/dread.yml`](../../../Resources/Prototypes/_WG/Shipyard/dread.yml)
 - [`Resources/Prototypes/_WG/Shipyard/dredger.yml`](../../../Resources/Prototypes/_WG/Shipyard/dredger.yml)
 - [`Resources/Prototypes/_WG/Shipyard/Entities/Objects/Devices/ship_vouchers.yml`](../../../Resources/Prototypes/_WG/Shipyard/Entities/Objects/Devices/ship_vouchers.yml)
+- [`Resources/Prototypes/_WG/Shipyard/excelsior.yml`](../../../Resources/Prototypes/_WG/Shipyard/excelsior.yml)
 - [`Resources/Prototypes/_WG/Shipyard/foxtrot_ii.yml`](../../../Resources/Prototypes/_WG/Shipyard/foxtrot_ii.yml)
 - [`Resources/Prototypes/_WG/Shipyard/hammerhead.yml`](../../../Resources/Prototypes/_WG/Shipyard/hammerhead.yml)
 - [`Resources/Prototypes/_WG/Shipyard/hermes.yml`](../../../Resources/Prototypes/_WG/Shipyard/hermes.yml)
 - [`Resources/Prototypes/_WG/Shipyard/lathe_recipes.yml`](../../../Resources/Prototypes/_WG/Shipyard/lathe_recipes.yml)
+- [`Resources/Prototypes/_WG/Shipyard/lurker.yml`](../../../Resources/Prototypes/_WG/Shipyard/lurker.yml)
 - [`Resources/Prototypes/_WG/Shipyard/reach.yml`](../../../Resources/Prototypes/_WG/Shipyard/reach.yml)
 - [`Resources/Prototypes/_WG/Shipyard/Reaver/despot.yml`](../../../Resources/Prototypes/_WG/Shipyard/Reaver/despot.yml)
 - [`Resources/Prototypes/_WG/Shipyard/Reaver/huolian.yml`](../../../Resources/Prototypes/_WG/Shipyard/Reaver/huolian.yml)
@@ -79,9 +82,8 @@ share from its slot, or from the counter of a trader hosting it (`ShipyardHostCa
 - [`Resources/Prototypes/_WG/Shipyard/srashakri.yml`](../../../Resources/Prototypes/_WG/Shipyard/srashakri.yml)
 - [`Resources/Prototypes/_WG/Shipyard/sunrise.yml`](../../../Resources/Prototypes/_WG/Shipyard/sunrise.yml)
 - [`Resources/Prototypes/_WG/Shipyard/TSF/welder.yml`](../../../Resources/Prototypes/_WG/Shipyard/TSF/welder.yml)
-- [`Resources/Prototypes/_WG/Shipyard/ubm_excelsior.yml`](../../../Resources/Prototypes/_WG/Shipyard/ubm_excelsior.yml)
-- [`Resources/Prototypes/_WG/Shipyard/ubm_lurker.yml`](../../../Resources/Prototypes/_WG/Shipyard/ubm_lurker.yml)
-- [`Resources/Prototypes/_WG/Shipyard/vox_vrakritatat.yml`](../../../Resources/Prototypes/_WG/Shipyard/vox_vrakritatat.yml)
+- [`Resources/Prototypes/_WG/Shipyard/viscount.yml`](../../../Resources/Prototypes/_WG/Shipyard/viscount.yml)
+- [`Resources/Prototypes/_WG/Shipyard/vrakritatat.yml`](../../../Resources/Prototypes/_WG/Shipyard/vrakritatat.yml)
 
 ### Localization
 
@@ -93,15 +95,17 @@ share from its slot, or from the counter of a trader hosting it (`ShipyardHostCa
 
 ### Shared maps
 
+- [`Resources/SharedMaps/_WG/Shipyard/Shuttles/baron.yml`](../../../Resources/SharedMaps/_WG/Shipyard/Shuttles/baron.yml)
 - [`Resources/SharedMaps/_WG/Shipyard/Shuttles/brute.yml`](../../../Resources/SharedMaps/_WG/Shipyard/Shuttles/brute.yml)
 - [`Resources/SharedMaps/_WG/Shipyard/Shuttles/bucket.yml`](../../../Resources/SharedMaps/_WG/Shipyard/Shuttles/bucket.yml)
 - [`Resources/SharedMaps/_WG/Shipyard/Shuttles/carabela.yml`](../../../Resources/SharedMaps/_WG/Shipyard/Shuttles/carabela.yml)
-- [`Resources/SharedMaps/_WG/Shipyard/Shuttles/Carrier/vox_skipjack.yml`](../../../Resources/SharedMaps/_WG/Shipyard/Shuttles/Carrier/vox_skipjack.yml)
 - [`Resources/SharedMaps/_WG/Shipyard/Shuttles/dread.yml`](../../../Resources/SharedMaps/_WG/Shipyard/Shuttles/dread.yml)
 - [`Resources/SharedMaps/_WG/Shipyard/Shuttles/dredger.yml`](../../../Resources/SharedMaps/_WG/Shipyard/Shuttles/dredger.yml)
+- [`Resources/SharedMaps/_WG/Shipyard/Shuttles/excelsior.yml`](../../../Resources/SharedMaps/_WG/Shipyard/Shuttles/excelsior.yml)
 - [`Resources/SharedMaps/_WG/Shipyard/Shuttles/foxtrot_ii.yml`](../../../Resources/SharedMaps/_WG/Shipyard/Shuttles/foxtrot_ii.yml)
 - [`Resources/SharedMaps/_WG/Shipyard/Shuttles/hammerhead.yml`](../../../Resources/SharedMaps/_WG/Shipyard/Shuttles/hammerhead.yml)
 - [`Resources/SharedMaps/_WG/Shipyard/Shuttles/hermes.yml`](../../../Resources/SharedMaps/_WG/Shipyard/Shuttles/hermes.yml)
+- [`Resources/SharedMaps/_WG/Shipyard/Shuttles/lurker.yml`](../../../Resources/SharedMaps/_WG/Shipyard/Shuttles/lurker.yml)
 - [`Resources/SharedMaps/_WG/Shipyard/Shuttles/reach.yml`](../../../Resources/SharedMaps/_WG/Shipyard/Shuttles/reach.yml)
 - [`Resources/SharedMaps/_WG/Shipyard/Shuttles/Reaver/despot.yml`](../../../Resources/SharedMaps/_WG/Shipyard/Shuttles/Reaver/despot.yml)
 - [`Resources/SharedMaps/_WG/Shipyard/Shuttles/Reaver/huolian.yml`](../../../Resources/SharedMaps/_WG/Shipyard/Shuttles/Reaver/huolian.yml)
@@ -116,13 +120,16 @@ share from its slot, or from the counter of a trader hosting it (`ShipyardHostCa
 - [`Resources/SharedMaps/_WG/Shipyard/Shuttles/srashakri.yml`](../../../Resources/SharedMaps/_WG/Shipyard/Shuttles/srashakri.yml)
 - [`Resources/SharedMaps/_WG/Shipyard/Shuttles/sunrise.yml`](../../../Resources/SharedMaps/_WG/Shipyard/Shuttles/sunrise.yml)
 - [`Resources/SharedMaps/_WG/Shipyard/Shuttles/TSF/welder.yml`](../../../Resources/SharedMaps/_WG/Shipyard/Shuttles/TSF/welder.yml)
-- [`Resources/SharedMaps/_WG/Shipyard/Shuttles/ubm_excelsior.yml`](../../../Resources/SharedMaps/_WG/Shipyard/Shuttles/ubm_excelsior.yml)
-- [`Resources/SharedMaps/_WG/Shipyard/Shuttles/ubm_lurker.yml`](../../../Resources/SharedMaps/_WG/Shipyard/Shuttles/ubm_lurker.yml)
-- [`Resources/SharedMaps/_WG/Shipyard/Shuttles/vox_vrakritatat.yml`](../../../Resources/SharedMaps/_WG/Shipyard/Shuttles/vox_vrakritatat.yml)
+- [`Resources/SharedMaps/_WG/Shipyard/Shuttles/viscount.yml`](../../../Resources/SharedMaps/_WG/Shipyard/Shuttles/viscount.yml)
+- [`Resources/SharedMaps/_WG/Shipyard/Shuttles/vrakritatat.yml`](../../../Resources/SharedMaps/_WG/Shipyard/Shuttles/vrakritatat.yml)
 
 ## Non-modular edits
 
-- [`Content.Server/_NF/Shipyard/Systems/ShipyardSystem.Consoles.cs`](../../_NF/Shipyard/Systems/ShipyardSystem.Consoles.cs): refuse the sale when the bank share can't be taken; an Ironman's frozen balance bought ships for free
+- [`Content.Server/_Mono/Shipyard/ShipyardVoucherSystem.cs`](../../_Mono/Shipyard/ShipyardVoucherSystem.cs): every voucher runs out, so a kept card showed "infinite" with one use left
+- [`Content.Server/_NF/Shipyard/Systems/ShipyardSystem.Consoles.cs`](../../_NF/Shipyard/Systems/ShipyardSystem.Consoles.cs)
+  - set below, so a refused redemption starts no cooldown
+  - the cooldown starts only with a redemption that goes through
+  - refuse the sale when the bank share can't be taken; an Ironman's frozen balance bought ships for free
 - [`Content.Server/_NF/Shipyard/Systems/ShipyardSystem.cs`](../../_NF/Shipyard/Systems/ShipyardSystem.cs)
   - last look at the grid, with its deed, before it goes. See _WG/Shipyard.
   - the hull is parked and taken apart over many ticks; this stalled the server
@@ -135,16 +142,22 @@ share from its slot, or from the counter of a trader hosting it (`ShipyardHostCa
   - zero entries do not count
 - [`Content.Shared/Damage/DamageSpecifierDictionarySerializer.cs`](../../../Content.Shared/Damage/DamageSpecifierDictionarySerializer.cs): adds writing support so DamageSpecifier can round-trip through DamageDict
 - [`Content.Shared/VendingMachines/VendingMachineComponent.cs`](../../../Content.Shared/VendingMachines/VendingMachineComponent.cs): a data definition, so a live machine's stock can be written out with its grid
+- [`Resources/Prototypes/_FarHorizons/Entities/Structures/Power/Generation/FissionGenerator/turbine.yml`](../../../Resources/Prototypes/_FarHorizons/Entities/Structures/Power/Generation/FissionGenerator/turbine.yml): turbines respawn these every tick, so a saved ship must not keep duplicates that unanchor the turbine on reload
 - [`Resources/Prototypes/_Mono/Entities/Objects/Devices/ship_vouchers.yml`](../../../Resources/Prototypes/_Mono/Entities/Objects/Devices/ship_vouchers.yml): New WG T0 Ships
 - [`Resources/Prototypes/_Mono/Outpost/caelestinus.yml`](../../../Resources/Prototypes/_Mono/Outpost/caelestinus.yml): ships sold anywhere on this station end up on the used ship lot
 - [`Resources/Prototypes/_Mono/Recipes/Lathes/Packs/Factions/phaethon_dynasty.yml`](../../../Resources/Prototypes/_Mono/Recipes/Lathes/Packs/Factions/phaethon_dynasty.yml): Foxtrot-II voucher
 - [`Resources/Prototypes/_Mono/Roles/Jobs/Medical/medic.yml`](../../../Resources/Prototypes/_Mono/Roles/Jobs/Medical/medic.yml): free Triage or Stubby
 - [`Resources/Prototypes/_Mono/Roles/Jobs/ViperGroup/commander.yml`](../../../Resources/Prototypes/_Mono/Roles/Jobs/ViperGroup/commander.yml): VG commanders start with a voucher for their Wolf
+- [`Resources/Prototypes/_Mono/Shipyard/Civilian/guppy.yml`](../../../Resources/Prototypes/_Mono/Shipyard/Civilian/guppy.yml): price includes its single mining laser
 - [`Resources/Prototypes/_NF/Entities/Objects/Devices/Misc/ship_vouchers.yml`](../../../Resources/Prototypes/_NF/Entities/Objects/Devices/Misc/ship_vouchers.yml)
   - Mono vouchers only list their vessels, access alone offers nothing
   - the mail ship, not the janitor's
   - Judges can redeem Roswell with the standard station guard voucher
 - [`Resources/Prototypes/_NF/Entities/Structures/Machines/Computers/computers_shipyard.yml`](../../../Resources/Prototypes/_NF/Entities/Structures/Machines/Computers/computers_shipyard.yml): cash in a destroyed console drops instead of being deleted
 - [`Resources/SharedMaps/_Mono/Shuttles/Civilian/guppy.yml`](../../../Resources/SharedMaps/_Mono/Shuttles/Civilian/guppy.yml): Saved with its air filled in; the starter ship spawned as vacuum.
+- [`Resources/SharedMaps/_Mono/Shuttles/VG/keelback.yml`](../../../Resources/SharedMaps/_Mono/Shuttles/VG/keelback.yml): VG shipyard shuttle map with crew spawns for its listed jobs.
+- [`Resources/SharedMaps/_Mono/Shuttles/VG/lancehead.yml`](../../../Resources/SharedMaps/_Mono/Shuttles/VG/lancehead.yml): VG shipyard shuttle map with restored job-specific crew spawns.
+- [`Resources/SharedMaps/_Mono/Shuttles/VG/leviathan.yml`](../../../Resources/SharedMaps/_Mono/Shuttles/VG/leviathan.yml): VG shipyard shuttle map for its shipyard listing.
+- [`Resources/SharedMaps/_Mono/Shuttles/VG/venom.yml`](../../../Resources/SharedMaps/_Mono/Shuttles/VG/venom.yml): VG shipyard shuttle map with restored job-specific crew spawns.
 
 <!-- WOLFGATE-GENERATED END -->

@@ -595,7 +595,9 @@ it back up to Okay after any drain, a Kelotane overdose included, before their d
 - [`Resources/Prototypes/_Impstation/Entities/Consumable/Food/meat.yml`](../../../Resources/Prototypes/_Impstation/Entities/Consumable/Food/meat.yml): ported from HardLight
 - [`Resources/Prototypes/_Impstation/Entities/Mobs/Customization/Markings/headcovers.yml`](../../../Resources/Prototypes/_Impstation/Entities/Mobs/Customization/Markings/headcovers.yml): add Canine
 - [`Resources/Prototypes/_Impstation/Entities/Mobs/Customization/Markings/human_hair.yml`](../../../Resources/Prototypes/_Impstation/Entities/Mobs/Customization/Markings/human_hair.yml): add Canine
-- [`Resources/Prototypes/_Impstation/Entities/Mobs/Customization/Markings/misc.yml`](../../../Resources/Prototypes/_Impstation/Entities/Mobs/Customization/Markings/misc.yml): eye markings get their own points (was Head)
+- [`Resources/Prototypes/_Impstation/Entities/Mobs/Customization/Markings/misc.yml`](../../../Resources/Prototypes/_Impstation/Entities/Mobs/Customization/Markings/misc.yml)
+  - eye markings get their own points (was Head)
+  - was Chest, which the tail layer covers
 - [`Resources/Prototypes/_Impstation/Entities/Mobs/Customization/Markings/moth.yml`](../../../Resources/Prototypes/_Impstation/Entities/Mobs/Customization/Markings/moth.yml): eye markings get their own points (was Head)
 - [`Resources/Prototypes/_Impstation/Entities/Mobs/Customization/Markings/thaven.yml`](../../../Resources/Prototypes/_Impstation/Entities/Mobs/Customization/Markings/thaven.yml)
   - Wolfgate species in the list
@@ -634,7 +636,6 @@ it back up to Okay after any drain, a Kelotane overdose included, before their d
   - was false, so the base species is selectable in the creator
   - tails are optional so players can go without one
   - was 8, more marking slots
-- [`Resources/Prototypes/_Mono/Traits/physical.yml`](../../../Resources/Prototypes/_Mono/Traits/physical.yml): Canine is a Vulpkanin copy
 - [`Resources/Prototypes/_NF/Body/Organs/avali.yml`](../../../Resources/Prototypes/_NF/Body/Organs/avali.yml): ported from HardLight
 - [`Resources/Prototypes/_NF/Entities/Mobs/Customization/Markings/human_hair.yml`](../../../Resources/Prototypes/_NF/Entities/Mobs/Customization/Markings/human_hair.yml): ported from HardLight
 - [`Resources/Prototypes/_NF/Loadouts/loadout_effects.yml`](../../../Resources/Prototypes/_NF/Loadouts/loadout_effects.yml): the six species the earlier port missed
